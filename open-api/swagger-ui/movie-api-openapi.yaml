@@ -9,14 +9,13 @@ info:
   contact:
     name: API Support
     email: ae.troshkin@gmail.com
-
 servers:
   - url: http://localhost:8080/api/v1
     description: Production server
 
 paths:
-  /movies:
-    get:
+  /movies/filters:
+    post:
       tags:
         - Movies
       summary: Получить список фильмов
@@ -41,77 +40,12 @@ paths:
             minimum: 1
             maximum: 1000
             default: 20
-        - name: sort
-          in: query
-          description: |
-            Поля для сортировки в формате "field1,asc;field2,desc".
-            Допустимые поля: id, name, creationDate, oscarsCount, totalBoxOffice, length
-          required: false
-          schema:
-            type: string
-            example: "name,asc;creationDate,desc"
-        - name: name
-          in: query
-          description: Фильтр по названию фильма
-          required: false
-          schema:
-            type: string
-        - name: genre
-          in: query
-          description: Фильтр по жанру
-          required: false
-          schema:
-            $ref: '#/components/schemas/MovieGenre'
-        - name: oscarsCount
-          in: query
-          description: Фильтр по количеству Оскаров
-          required: false
-          schema:
-            type: integer
-            minimum: 1
-        - name: totalBoxOffice
-          in: query
-          description: Фильтр по сборам (минимальное значение)
-          required: false
-          schema:
-            type: number
-            format: double
-            minimum: 0
-        - name: length
-          in: query
-          description: Фильтр по длительности (минимальное значение)
-          required: false
-          schema:
-            type: integer
-            format: int64
-            minimum: 1
-        - name: coordinates.x
-          in: query
-          description: Фильтр по координате X
-          required: false
-          schema:
-            type: integer
-            minimum: -650
-        - name: coordinates.y
-          in: query
-          description: Фильтр по координате Y
-          required: false
-          schema:
-            type: number
-            format: float
-            minimum: -612
-        - name: operator.name
-          in: query
-          description: Фильтр по имени оператора
-          required: false
-          schema:
-            type: string
-        - name: operator.nationality
-          in: query
-          description: Фильтр по национальности оператора
-          required: false
-          schema:
-            $ref: '#/components/schemas/Country'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieSearchRequest'
       responses:
         '200':
           description: Список фильмов успешно получен
@@ -140,7 +74,8 @@ paths:
           $ref: '#/components/responses/BadRequest'
         '500':
           $ref: '#/components/responses/InternalServerError'
-    
+
+  /movies:
     post:
       tags:
         - Movies
@@ -189,7 +124,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     put:
       tags:
         - Movies
@@ -222,7 +156,6 @@ paths:
           $ref: '#/components/responses/NotFound'
         '500':
           $ref: '#/components/responses/InternalServerError'
-
     delete:
       tags:
         - Movies
@@ -245,7 +178,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /movies/total-length:
-    get:
+    post:
       tags:
         - Movies
       summary: Рассчитать сумму длительности всех фильмов
@@ -265,19 +198,23 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /movies/count-by-genre/{genre}:
-    get:
+  /movies/count-by-genre:
+    post:
       tags:
         - Movies
       summary: Подсчитать количество фильмов по жанру
       description: Возвращает количество объектов, значение поля genre которых равно заданному
-      parameters:
-        - name: genre
-          in: path
-          required: true
-          description: Жанр фильма для подсчета
-          schema:
-            $ref: '#/components/schemas/MovieGenre'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - genre
+              properties:
+                genre:
+                  $ref: '#/components/schemas/MovieGenre'
       responses:
         '200':
           description: Количество фильмов успешно подсчитано
@@ -296,20 +233,24 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /movies/search-by-name/{namePrefix}:
-    get:
+  /movies/search-by-name:
+    post:
       tags:
         - Movies
       summary: Найти фильмы по началу названия
       description: Возвращает массив объектов, значение поля name которых начинается с заданной подстроки
-      parameters:
-        - name: namePrefix
-          in: path
-          required: true
-          description: Подстрока для поиска в начале названия фильма
-          schema:
-            type: string
-            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - namePrefix
+              properties:
+                namePrefix:
+                  type: string
+                  minLength: 1
       responses:
         '200':
           description: Фильмы найдены
@@ -325,7 +266,7 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /oscar/directors/get-loosers:
-    get:
+    post:
       tags:
         - Oscar Operations
       summary: Получить список режиссеров-неудачников
@@ -393,6 +334,104 @@ paths:
 
 components:
   schemas:
+
+    MovieSearchRequest:
+      type: object
+      properties:
+        sort:
+          type: string
+          description: |
+            Поля для сортировки в формате "field1,asc;field2,desc".
+            Допустимые поля: id, name, creationDate, oscarsCount, totalBoxOffice, length
+          example: "name,asc;creationDate,desc"
+        name:
+          type: string
+          description: Фильтр по названию фильма
+
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+
+        oscarsCount:
+          type: object
+          description: Фильтр по диапазону количества Оскаров
+          properties:
+            min:
+              type: integer
+              minimum: 1
+              description: Минимальное количество Оскаров
+            max:
+              type: integer
+              minimum: 1
+              description: Максимальное количество Оскаров
+
+        totalBoxOffice:
+          type: object
+          description: Фильтр по диапазону сборов
+          properties:
+            min:
+              type: number
+              format: double
+              minimum: 0
+              description: Минимальные сборы
+            max:
+              type: number
+              format: double
+              minimum: 0
+              description: Максимальные сборы
+
+        length:
+          type: object
+          description: Фильтр по диапазону длительности
+          properties:
+            min:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Минимальная длительность
+            max:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Максимальная длительность
+
+        coordinates:
+          type: object
+          description: Фильтр по диапазону координат
+          properties:
+            x:
+              type: object
+              properties:
+                min:
+                  type: integer
+                  minimum: -650
+                  description: Минимальная координата X
+                max:
+                  type: integer
+                  minimum: -650
+                  description: Максимальная координата X
+            y:
+              type: object
+              properties:
+                min:
+                  type: number
+                  format: float
+                  minimum: -612
+                  description: Минимальная координата Y
+                max:
+                  type: number
+                  format: float
+                  minimum: -612
+                  description: Максимальная координата Y
+
+        operator:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Фильтр по имени оператора
+            nationality:
+              $ref: '#/components/schemas/Country'
+
     Movie:
       type: object
       required:
@@ -442,7 +481,7 @@ components:
           $ref: '#/components/schemas/MovieGenre'
         operator:
           $ref: '#/components/schemas/Person'
-          
+
     MovieRequest:
       type: object
       required:
@@ -626,7 +665,6 @@ components:
             message: "Значение поля 'length' должно быть больше 0"
             timestamp: "2024-01-15T10:30:00Z"
             path: "/api/v1/movies"
-
     NotFound:
       description: Ресурс не найден
       content:
@@ -638,7 +676,6 @@ components:
             message: "Фильм с ID 999 не найден"
             timestamp: "2024-01-15T10:30:00Z"
             path: "/api/v1/movies/999"
-
     InternalServerError:
       description: Внутренняя ошибка сервера
       content:
