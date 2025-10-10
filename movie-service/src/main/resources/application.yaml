@@ -35,9 +35,9 @@ spring:
     default-property-inclusion: non_null
 
 server:
-  port: 8080
+  port: 9001
   servlet:
-    context-path: /
+    context-path: /service1
 
 logging:
   level:
@@ -56,4 +56,8 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
+
+api:
+  server:
+    host: localhost
 
