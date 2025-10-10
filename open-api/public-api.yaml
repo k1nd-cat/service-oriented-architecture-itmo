@@ -1,0 +1,703 @@
+openapi: 3.0.3
+info:
+  title: Movie Collection Management API - Public
+  description: |
+    Публичный API для управления коллекцией фильмов. Включает:
+    1. CRUD операции для управления фильмами
+    2. Поиск и фильтрацию фильмов
+    3. Операции с "Оскарами"
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: ae.troshkin@gmail.com
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Production server
+
+paths:
+  /movies/filters:
+    post:
+      tags:
+        - Movies
+      summary: Получить список фильмов
+      description: |
+        Возвращает массив фильмов с поддержкой сортировки, фильтрации и пагинации.
+        Можно фильтровать и сортировать по любому полю.
+      parameters:
+        - name: page
+          in: query
+          description: Номер страницы (начиная с 1)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: size
+          in: query
+          description: Размер страницы (количество элементов)
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 20
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieSearchRequest'
+      responses:
+        '200':
+          description: Список фильмов успешно получен
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Movie'
+                  page:
+                    type: integer
+                    description: Текущая страница
+                  size:
+                    type: integer
+                    description: Размер страницы
+                  totalElements:
+                    type: integer
+                    description: Общее количество элементов
+                  totalPages:
+                    type: integer
+                    description: Общее количество страниц
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /movies:
+    post:
+      tags:
+        - Movies
+      summary: Создать новый фильм
+      description: Добавляет новый фильм в коллекцию
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieRequest'
+      responses:
+        '201':
+          description: Фильм успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /movies/{id}:
+    get:
+      tags:
+        - Movies
+      summary: Получить фильм по ID
+      description: Возвращает фильм с указанным идентификатором
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор фильма
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Фильм найден
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      tags:
+        - Movies
+      summary: Обновить фильм
+      description: Обновляет существующий фильм по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор фильма
+          schema:
+            type: integer
+            minimum: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MovieRequest'
+      responses:
+        '200':
+          description: Фильм успешно обновлен
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Movie'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      tags:
+        - Movies
+      summary: Удалить фильм
+      description: Удаляет фильм из коллекции по ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Уникальный идентификатор фильма
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '204':
+          description: Фильм успешно удален
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /movies/calculate-total-length:
+    post:
+      tags:
+        - Movies
+      summary: Рассчитать сумму длительности всех фильмов
+      description: Возвращает сумму значений поля length для всех объектов в коллекции
+      responses:
+        '200':
+          description: Сумма длительности успешно рассчитана
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalLength:
+                    type: integer
+                    format: int64
+                    description: Общая длительность всех фильмов в минутах
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /movies/count-by-genre:
+    post:
+      tags:
+        - Movies
+      summary: Подсчитать количество фильмов по жанру
+      description: Возвращает количество объектов, значение поля genre которых равно заданному
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - genre
+              properties:
+                genre:
+                  $ref: '#/components/schemas/MovieGenre'
+      responses:
+        '200':
+          description: Количество фильмов успешно подсчитано
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  genre:
+                    $ref: '#/components/schemas/MovieGenre'
+                  count:
+                    type: integer
+                    description: Количество фильмов указанного жанра
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /movies/search-by-name:
+    post:
+      tags:
+        - Movies
+      summary: Найти фильмы по началу названия
+      description: Возвращает массив объектов, значение поля name которых начинается с заданной подстроки
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - namePrefix
+              properties:
+                namePrefix:
+                  type: string
+                  minLength: 1
+      responses:
+        '200':
+          description: Фильмы найдены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /oscar/directors/get-loosers:
+    post:
+      tags:
+        - Oscar Operations
+      summary: Получить список режиссеров-неудачников
+      description: |
+        Получает список режиссеров, ни один фильм которых не получил ни одного "Оскара".
+        Вызывает API первого сервиса для получения данных о фильмах.
+      responses:
+        '200':
+          description: Список режиссеров успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                      description: Имя режиссера
+                    passportID:
+                      type: string
+                      description: ID паспорта режиссера
+                    filmsCount:
+                      type: integer
+                      description: Количество фильмов режиссера без Оскаров
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /oscar/directors/humiliate-by-genre/{genre}:
+    post:
+      tags:
+        - Oscar Operations
+      summary: Отобрать Оскары у режиссеров по жанру
+      description: |
+        Отбирает все "Оскары" у всех фильмов режиссеров, снявших хоть один фильм в указанном жанре.
+        Устанавливает oscarsCount = 0 для всех фильмов таких режиссеров.
+      parameters:
+        - name: genre
+          in: path
+          required: true
+          description: Жанр фильма для определения режиссеров
+          schema:
+            $ref: '#/components/schemas/MovieGenre'
+      responses:
+        '200':
+          description: Операция успешно выполнена
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  affectedDirectors:
+                    type: integer
+                    description: Количество затронутых режиссеров
+                  affectedMovies:
+                    type: integer
+                    description: Количество затронутых фильмов
+                  removedOscars:
+                    type: integer
+                    description: Общее количество отобранных Оскаров
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+
+    MovieSearchRequest:
+      type: object
+      properties:
+        sort:
+          type: string
+          description: |
+            Поля для сортировки в формате "field1,asc;field2,desc".
+            Допустимые поля: id, name, creationDate, oscarsCount, totalBoxOffice, length
+          example: "name,asc;creationDate,desc"
+        name:
+          type: string
+          description: Фильтр по названию фильма
+
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+
+        oscarsCount:
+          type: object
+          description: Фильтр по диапазону количества Оскаров
+          properties:
+            min:
+              type: integer
+              minimum: 1
+              description: Минимальное количество Оскаров
+            max:
+              type: integer
+              minimum: 1
+              description: Максимальное количество Оскаров
+
+        totalBoxOffice:
+          type: object
+          description: Фильтр по диапазону сборов
+          properties:
+            min:
+              type: number
+              format: double
+              minimum: 0
+              description: Минимальные сборы
+            max:
+              type: number
+              format: double
+              minimum: 0
+              description: Максимальные сборы
+
+        length:
+          type: object
+          description: Фильтр по диапазону длительности
+          properties:
+            min:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Минимальная длительность
+            max:
+              type: integer
+              format: int64
+              minimum: 1
+              description: Максимальная длительность
+
+        coordinates:
+          type: object
+          description: Фильтр по диапазону координат
+          properties:
+            x:
+              type: object
+              properties:
+                min:
+                  type: integer
+                  minimum: -650
+                  description: Минимальная координата X
+                max:
+                  type: integer
+                  minimum: -650
+                  description: Максимальная координата X
+            y:
+              type: object
+              properties:
+                min:
+                  type: number
+                  format: float
+                  minimum: -612
+                  description: Минимальная координата Y
+                max:
+                  type: number
+                  format: float
+                  minimum: -612
+                  description: Максимальная координата Y
+
+        operator:
+          type: object
+          properties:
+            name:
+              type: string
+              description: Фильтр по имени оператора
+            nationality:
+              $ref: '#/components/schemas/Country'
+
+    Movie:
+      type: object
+      required:
+        - id
+        - name
+        - coordinates
+        - creationDate
+        - length
+        - director
+      properties:
+        id:
+          type: integer
+          description: Уникальный идентификатор фильма (генерируется автоматически)
+          minimum: 1
+          example: 1
+        name:
+          type: string
+          description: Название фильма
+          minLength: 1
+          example: "Криминальное чтиво"
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        creationDate:
+          type: string
+          format: date-time
+          description: Дата создания записи (генерируется автоматически)
+          example: "2024-01-15T10:30:00Z"
+        oscarsCount:
+          type: integer
+          description: Количество полученных Оскаров
+          minimum: 1
+          nullable: true
+          example: 1
+        totalBoxOffice:
+          type: number
+          format: double
+          description: Общие сборы фильма
+          minimum: 0
+          nullable: true
+          example: 214179088.0
+        length:
+          type: integer
+          format: int64
+          description: Длительность фильма в минутах
+          minimum: 1
+          example: 154
+        director:
+          $ref: '#/components/schemas/Person'
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        operator:
+          $ref: '#/components/schemas/Person'
+
+    MovieRequest:
+      type: object
+      required:
+        - name
+        - coordinates
+        - length
+        - director
+      properties:
+        name:
+          type: string
+          description: Название фильма
+          minLength: 1
+          example: "Криминальное чтиво"
+        coordinates:
+          $ref: '#/components/schemas/Coordinates'
+        oscarsCount:
+          type: integer
+          description: Количество полученных Оскаров
+          minimum: 1
+          nullable: true
+          example: 1
+        totalBoxOffice:
+          type: number
+          format: double
+          description: Общие сборы фильма
+          minimum: 0
+          nullable: true
+          example: 214179088.0
+        length:
+          type: integer
+          format: int64
+          description: Длительность фильма в минутах
+          minimum: 1
+          example: 154
+        director:
+          $ref: '#/components/schemas/Person'
+        genre:
+          $ref: '#/components/schemas/MovieGenre'
+        operator:
+          $ref: '#/components/schemas/Person'
+
+    Coordinates:
+      type: object
+      required:
+        - x
+        - y
+      properties:
+        x:
+          type: integer
+          description: Координата X
+          minimum: -650
+          example: 100
+        y:
+          type: number
+          format: float
+          description: Координата Y
+          minimum: -612
+          example: 50.5
+
+    Person:
+      type: object
+      required:
+        - name
+        - passportID
+        - hairColor
+        - location
+      nullable: true
+      properties:
+        name:
+          type: string
+          description: Имя человека (режиссера или оператора)
+          minLength: 1
+          example: "Квентин Тарантино"
+        passportID:
+          type: string
+          description: Номер паспорта (уникальный)
+          minLength: 8
+          example: "AB1234567"
+        eyeColor:
+          $ref: '#/components/schemas/EyeColor'
+        hairColor:
+          $ref: '#/components/schemas/HairColor'
+        nationality:
+          $ref: '#/components/schemas/Country'
+        location:
+          $ref: '#/components/schemas/Location'
+
+    Location:
+      type: object
+      required:
+        - x
+        - y
+        - z
+      properties:
+        x:
+          type: number
+          format: double
+          description: Координата X местоположения
+          example: 12.34
+        y:
+          type: integer
+          format: int64
+          description: Координата Y местоположения
+          example: 56
+        z:
+          type: integer
+          description: Координата Z местоположения
+          example: 78
+
+    MovieGenre:
+      type: string
+      description: Жанр фильма
+      enum:
+        - COMEDY
+        - ADVENTURE
+        - TRAGEDY
+        - SCIENCE_FICTION
+      example: COMEDY
+
+    EyeColor:
+      type: string
+      description: Цвет глаз
+      nullable: true
+      enum:
+        - GREEN
+        - RED
+        - BLACK
+        - ORANGE
+      example: GREEN
+
+    HairColor:
+      type: string
+      description: Цвет волос
+      enum:
+        - GREEN
+        - RED
+        - BLACK
+        - BLUE
+      example: BLACK
+
+    Country:
+      type: string
+      description: Страна
+      nullable: true
+      enum:
+        - FRANCE
+        - VATICAN
+        - SOUTH_KOREA
+      example: FRANCE
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Краткое описание ошибки
+          example: "BAD_REQUEST"
+        message:
+          type: string
+          description: Подробное сообщение об ошибке
+          example: "Поле 'name' не может быть пустым"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00Z"
+        path:
+          type: string
+          description: Путь запроса, где произошла ошибка
+          example: "/api/v1/movies"
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос - нарушены ограничения целостности данных
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "BAD_REQUEST"
+            message: "Значение поля 'length' должно быть больше 0"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/api/v1/movies"
+    NotFound:
+      description: Ресурс не найден
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "NOT_FOUND"
+            message: "Фильм с ID 999 не найден"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/api/v1/movies/999"
+    InternalServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "Произошла внутренняя ошибка сервера"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/api/v1/movies"
+
+tags:
+  - name: Movies
+    description: Операции для управления коллекцией фильмов
+  - name: Oscar Operations
+    description: Дополнительные операции с "Оскарами"
+
