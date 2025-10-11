@@ -1,5 +1,6 @@
 package ru.itmo.soa.movie.controller;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
@@ -9,31 +10,40 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 @Controller
 public class SwaggerController {
 
-    @GetMapping(value = "/v3/api-docs/public", produces = "application/yaml")
+    @Value("${api.server.host}")
+    private String serverHost;
+
+    @Value("${api.server.port}")
+    private String serverPort;
+
+    @GetMapping(value = "/v3/api-docs/public", produces = "application/yaml; charset=UTF-8")
     @ResponseBody
-    public byte[] getPublicApiDocs() throws IOException {
-        ClassPathResource resource = new ClassPathResource("openapi/public-api.yaml");
+    public String getPublicApiDocs() throws IOException {
+        return loadApiDocsWithReplacedHost("openapi/public-api.yaml");
+    }
+
+    @GetMapping(value = "/v3/api-docs/internal", produces = "application/yaml; charset=UTF-8")
+    @ResponseBody
+    public String getInternalApiDocs() throws IOException {
+        return loadApiDocsWithReplacedHost("openapi/internal-api.yaml");
+    }
+
+    private String loadApiDocsWithReplacedHost(String resourcePath) throws IOException {
+        ClassPathResource resource = new ClassPathResource(resourcePath);
         try (InputStream inputStream = resource.getInputStream()) {
-            return StreamUtils.copyToByteArray(inputStream);
+            String content = new String(StreamUtils.copyToByteArray(inputStream), StandardCharsets.UTF_8);
+            return content.replace("localhost:9001", serverHost + ":" + serverPort);
         }
     }
 
-    @GetMapping(value = "/v3/api-docs/internal", produces = "application/yaml")
+    @GetMapping(value = "/api-docs", produces = "text/plain; charset=UTF-8")
     @ResponseBody
-    public byte[] getInternalApiDocs() throws IOException {
-        ClassPathResource resource = new ClassPathResource("openapi/internal-api.yaml");
-        try (InputStream inputStream = resource.getInputStream()) {
-            return StreamUtils.copyToByteArray(inputStream);
-        }
-    }
-
-    @GetMapping(value = "/api-docs", produces = "text/plain")
-    @ResponseBody
-    public byte[] getApiDocs() throws IOException {
+    public String getApiDocs() throws IOException {
         return getPublicApiDocs();
     }
 

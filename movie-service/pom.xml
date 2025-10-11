@@ -230,7 +230,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/../open-api/public-api.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/public-api.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>ru.itmo.soa.movie.api.publicapi</apiPackage>
                             <modelPackage>ru.itmo.soa.movie.dto.publicapi</modelPackage>
@@ -259,7 +259,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <inputSpec>${project.basedir}/../open-api/internal-api.yaml</inputSpec>
+                            <inputSpec>${project.basedir}/src/main/resources/openapi/internal-api.yaml</inputSpec>
                             <generatorName>spring</generatorName>
                             <apiPackage>ru.itmo.soa.movie.api.internal</apiPackage>
                             <modelPackage>ru.itmo.soa.movie.dto.internal</modelPackage>

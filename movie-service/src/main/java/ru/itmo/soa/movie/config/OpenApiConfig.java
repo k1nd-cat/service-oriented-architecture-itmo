@@ -17,6 +17,9 @@ public class OpenApiConfig {
     @Value("${api.server.host}")
     private String serverHost;
 
+    @Value("${api.server.port}")
+    private String serverPort;
+
     @Bean
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
@@ -53,7 +56,7 @@ public class OpenApiConfig {
                                 .email("ae.troshkin@gmail.com")))
                 .servers(List.of(
                         new Server()
-                                .url("http://" + serverHost + ":9001/service1/api/v1")
+                                .url("http://" + serverHost + ":" + serverPort + "/service1/api/v1")
                                 .description("Production server")
                 ));
     }

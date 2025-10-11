@@ -2,10 +2,7 @@ openapi: 3.0.3
 info:
   title: Movie Collection Management API - Public
   description: |
-    Публичный API для управления коллекцией фильмов. Включает:
-    1. CRUD операции для управления фильмами
-    2. Поиск и фильтрацию фильмов
-    3. Операции с "Оскарами"
+    Публичный API для использования фронтенд-приложениями.
   version: 1.0.0
   contact:
     name: API Support
@@ -77,6 +74,24 @@ paths:
           $ref: '#/components/responses/InternalServerError'
 
   /movies:
+    get:
+      tags:
+        - Movies
+      summary: Получить все фильмы
+      description: Возвращает все фильмы в коллекции
+      responses:
+        '200':
+          description: Все фильмы успешно получены
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Movie'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
     post:
       tags:
         - Movies
@@ -261,73 +276,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Movie'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /oscar/directors/get-loosers:
-    post:
-      tags:
-        - Oscar Operations
-      summary: Получить список режиссеров-неудачников
-      description: |
-        Получает список режиссеров, ни один фильм которых не получил ни одного "Оскара".
-        Вызывает API первого сервиса для получения данных о фильмах.
-      responses:
-        '200':
-          description: Список режиссеров успешно получен
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    name:
-                      type: string
-                      description: Имя режиссера
-                    passportID:
-                      type: string
-                      description: ID паспорта режиссера
-                    filmsCount:
-                      type: integer
-                      description: Количество фильмов режиссера без Оскаров
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-
-  /oscar/directors/humiliate-by-genre/{genre}:
-    post:
-      tags:
-        - Oscar Operations
-      summary: Отобрать Оскары у режиссеров по жанру
-      description: |
-        Отбирает все "Оскары" у всех фильмов режиссеров, снявших хоть один фильм в указанном жанре.
-        Устанавливает oscarsCount = 0 для всех фильмов таких режиссеров.
-      parameters:
-        - name: genre
-          in: path
-          required: true
-          description: Жанр фильма для определения режиссеров
-          schema:
-            $ref: '#/components/schemas/MovieGenre'
-      responses:
-        '200':
-          description: Операция успешно выполнена
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  affectedDirectors:
-                    type: integer
-                    description: Количество затронутых режиссеров
-                  affectedMovies:
-                    type: integer
-                    description: Количество затронутых фильмов
-                  removedOscars:
-                    type: integer
-                    description: Общее количество отобранных Оскаров
         '400':
           $ref: '#/components/responses/BadRequest'
         '500':
@@ -698,6 +646,4 @@ components:
 tags:
   - name: Movies
     description: Операции для управления коллекцией фильмов
-  - name: Oscar Operations
-    description: Дополнительные операции с "Оскарами"
 

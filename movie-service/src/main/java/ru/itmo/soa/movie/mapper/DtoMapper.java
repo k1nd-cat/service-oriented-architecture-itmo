@@ -58,6 +58,10 @@ public interface DtoMapper {
         return dto == null ? null : ru.itmo.soa.movie.entity.enums.MovieGenre.valueOf(dto.name());
     }
 
+    default ru.itmo.soa.movie.entity.enums.MovieGenre toMovieGenreEntity(ru.itmo.soa.movie.dto.internal.MovieGenre dto) {
+        return dto == null ? null : ru.itmo.soa.movie.entity.enums.MovieGenre.valueOf(dto.name());
+    }
+
     default ru.itmo.soa.movie.dto.publicapi.MovieGenre fromMovieGenreEntity(ru.itmo.soa.movie.entity.enums.MovieGenre entity) {
         return entity == null ? null : ru.itmo.soa.movie.dto.publicapi.MovieGenre.valueOf(entity.name());
     }

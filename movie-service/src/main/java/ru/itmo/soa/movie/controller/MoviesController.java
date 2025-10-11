@@ -170,4 +170,10 @@ public class MoviesController {
         
         return ResponseEntity.ok(dtoMapper.fromMovieEntityList(movies));
     }
+
+    @GetMapping("/movies")
+    public ResponseEntity<List<Movie>> getAllMovies() {
+        List<MovieEntity> movies = movieService.getAllMovies();
+        return ResponseEntity.ok(dtoMapper.fromMovieEntityList(movies));
+    }
 }
