@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@ApplicationPath("")
+@ApplicationPath("/api/v1")
 @OpenAPIDefinition(
     info = @Info(
         title = "Oscar Service API",
