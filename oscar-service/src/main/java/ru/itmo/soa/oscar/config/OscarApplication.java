@@ -54,17 +54,10 @@ public class OscarApplication extends Application {
     @Override
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<>();
-
         resources.add(ru.itmo.soa.oscar.resource.OscarResource.class);
-        
         resources.add(OpenApiResource.class);
-        
-        resources.add(ru.itmo.soa.oscar.config.SwaggerUIResource.class);
-        
         resources.add(com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider.class);
-        
         resources.add(ru.itmo.soa.oscar.config.GenericExceptionMapper.class);
-        
         return resources;
     }
 }
