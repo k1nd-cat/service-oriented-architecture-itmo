@@ -1,6 +1,5 @@
 package ru.itmo.soa.oscar.config;
 
-import io.swagger.v3.jaxrs2.integration.resources.OpenApiResource;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
 import io.swagger.v3.oas.annotations.info.Info;
@@ -55,7 +54,6 @@ public class OscarApplication extends Application {
     public Set<Class<?>> getClasses() {
         Set<Class<?>> resources = new HashSet<>();
         resources.add(ru.itmo.soa.oscar.resource.OscarResource.class);
-        resources.add(OpenApiResource.class);
         resources.add(com.fasterxml.jackson.jakarta.rs.json.JacksonJsonProvider.class);
         resources.add(ru.itmo.soa.oscar.config.GenericExceptionMapper.class);
         return resources;
