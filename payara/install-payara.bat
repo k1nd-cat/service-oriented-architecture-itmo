@@ -48,8 +48,17 @@ if errorlevel 1 (
 echo [OK] Payara успешно распакована
 echo [OK] Установка завершена!
 echo.
+echo [*] Настройка порта 9001...
+call "%PAYARA_DIR%\bin\asadmin.bat" start-domain domain1
+timeout /t 5 /nobreak >nul
+call "%PAYARA_DIR%\bin\asadmin.bat" set server-config.network-config.network-listeners.network-listener.http-listener-1.port=9001
+call "%PAYARA_DIR%\bin\asadmin.bat" stop-domain domain1
+echo [OK] Порт настроен на 9001
+echo.
 echo Для запуска сервера используйте:
 echo   %~dp0%PAYARA_DIR%\bin\asadmin.bat start-domain
+echo.
+echo Сервер будет доступен на порту 9001
 echo.
 
 endlocal

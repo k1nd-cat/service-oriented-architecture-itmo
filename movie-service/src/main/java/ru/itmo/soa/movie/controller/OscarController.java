@@ -3,7 +3,6 @@ package ru.itmo.soa.movie.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.itmo.soa.movie.api.publicapi.OscarOperationsApi;
 import ru.itmo.soa.movie.dto.publicapi.MovieGenre;
 import ru.itmo.soa.movie.dto.publicapi.OscarDirectorsGetLoosersPost200ResponseInner;
 import ru.itmo.soa.movie.dto.publicapi.OscarDirectorsHumiliateByGenreGenrePost200Response;
@@ -17,13 +16,13 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class OscarController implements OscarOperationsApi {
+public class OscarController {
 
     private final MovieService movieService;
     private final DtoMapper dtoMapper;
 
-    @Override
-    public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> _oscarDirectorsGetLoosersPost() {
+    @PostMapping("/oscar/directors/get-loosers")
+    public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> getDirectorsWithoutOscars() {
         List<Map<String, Object>> directors = movieService.getDirectorsWithoutOscars();
         
         List<OscarDirectorsGetLoosersPost200ResponseInner> response = directors.stream()
@@ -40,9 +39,9 @@ public class OscarController implements OscarOperationsApi {
         return ResponseEntity.ok(response);
     }
 
-    @Override
-    public ResponseEntity<OscarDirectorsHumiliateByGenreGenrePost200Response> _oscarDirectorsHumiliateByGenreGenrePost(
-            MovieGenre genre) {
+    @PostMapping("/oscar/directors/humiliate-by-genre/{genre}")
+    public ResponseEntity<OscarDirectorsHumiliateByGenreGenrePost200Response> humiliateDirectorsByGenre(
+            @PathVariable("genre") MovieGenre genre) {
         Map<String, Object> result = movieService.humiliateDirectorsByGenre(
                 dtoMapper.toMovieGenreEntity(genre));
         

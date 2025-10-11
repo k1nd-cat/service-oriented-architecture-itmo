@@ -14,12 +14,6 @@ import java.util.List;
 @Configuration
 public class OpenApiConfig {
 
-    @Value("${server.port}")
-    private String serverPort;
-
-    @Value("${server.servlet.context-path}")
-    private String contextPath;
-
     @Value("${api.server.host}")
     private String serverHost;
 
@@ -59,8 +53,8 @@ public class OpenApiConfig {
                                 .email("ae.troshkin@gmail.com")))
                 .servers(List.of(
                         new Server()
-                                .url("http://" + serverHost + ":" + serverPort + contextPath)
-                                .description("Development server")
+                                .url("http://" + serverHost + ":9001/service1/api/v1")
+                                .description("Production server")
                 ));
     }
 }

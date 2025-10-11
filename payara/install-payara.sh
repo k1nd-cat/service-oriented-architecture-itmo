@@ -68,7 +68,19 @@ if [ -d "$PAYARA_DIR/glassfish/bin" ]; then
 fi
 
 echo "✓ Установка завершена!"
+
+# Настройка порта 9001
+echo ""
+echo "→ Настройка порта 9001..."
+"$PAYARA_DIR/bin/asadmin" start-domain domain1
+sleep 5
+"$PAYARA_DIR/bin/asadmin" set server-config.network-config.network-listeners.network-listener.http-listener-1.port=9001
+"$PAYARA_DIR/bin/asadmin" stop-domain domain1
+echo "✓ Порт настроен на 9001"
+
 echo ""
 echo "Для запуска сервера используйте:"
 echo "  $SCRIPT_DIR/$PAYARA_DIR/bin/asadmin start-domain"
+echo ""
+echo "Сервер будет доступен на порту 9001"
 

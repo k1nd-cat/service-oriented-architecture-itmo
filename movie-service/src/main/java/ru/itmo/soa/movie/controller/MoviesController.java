@@ -5,7 +5,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ru.itmo.soa.movie.api.publicapi.MoviesApi;
 import ru.itmo.soa.movie.dto.publicapi.*;
 import ru.itmo.soa.movie.entity.MovieEntity;
 import ru.itmo.soa.movie.mapper.DtoMapper;
@@ -16,16 +15,16 @@ import java.util.*;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class MoviesController implements MoviesApi {
+public class MoviesController {
 
     private final MovieService movieService;
     private final DtoMapper dtoMapper;
 
-    @Override
-    public ResponseEntity<MoviesFiltersPost200Response> _moviesFiltersPost(
-            Integer page,
-            Integer size,
-            MovieSearchRequest movieSearchRequest) {
+    @PostMapping("/movies/filters")
+    public ResponseEntity<MoviesFiltersPost200Response> getMoviesWithFilters(
+            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+            @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
+            @RequestBody(required = false) MovieSearchRequest movieSearchRequest) {
         
         Map<String, Object> filters = new HashMap<>();
         String sortString = null;
@@ -33,7 +32,6 @@ public class MoviesController implements MoviesApi {
         if (movieSearchRequest != null) {
             sortString = movieSearchRequest.getSort();
             
-            // Extract filters from search request
             if (movieSearchRequest.getName() != null) {
                 filters.put("name", movieSearchRequest.getName());
             }
@@ -42,7 +40,6 @@ public class MoviesController implements MoviesApi {
                 filters.put("genre", dtoMapper.toMovieGenreEntity(movieSearchRequest.getGenre()));
             }
             
-            // Oscars count filter
             if (movieSearchRequest.getOscarsCount() != null) {
                 MovieSearchRequestOscarsCount oscarsCount = movieSearchRequest.getOscarsCount();
                 if (oscarsCount.getMin() != null) {
@@ -53,7 +50,6 @@ public class MoviesController implements MoviesApi {
                 }
             }
             
-            // Total box office filter
             if (movieSearchRequest.getTotalBoxOffice() != null) {
                 MovieSearchRequestTotalBoxOffice boxOffice = movieSearchRequest.getTotalBoxOffice();
                 if (boxOffice.getMin() != null) {
@@ -64,7 +60,6 @@ public class MoviesController implements MoviesApi {
                 }
             }
             
-            // Length filter
             if (movieSearchRequest.getLength() != null) {
                 MovieSearchRequestLength length = movieSearchRequest.getLength();
                 if (length.getMin() != null) {
@@ -75,7 +70,6 @@ public class MoviesController implements MoviesApi {
                 }
             }
             
-            // Coordinates filter
             if (movieSearchRequest.getCoordinates() != null) {
                 MovieSearchRequestCoordinates coordinates = movieSearchRequest.getCoordinates();
                 if (coordinates.getX() != null) {
@@ -98,7 +92,6 @@ public class MoviesController implements MoviesApi {
                 }
             }
             
-            // Operator filter
             if (movieSearchRequest.getOperator() != null) {
                 MovieSearchRequestOperator operator = movieSearchRequest.getOperator();
                 if (operator.getName() != null) {
@@ -122,34 +115,34 @@ public class MoviesController implements MoviesApi {
         return ResponseEntity.ok(response);
     }
 
-    @Override
-    public ResponseEntity<Movie> _moviesPost(MovieRequest movieRequest) {
+    @PostMapping("/movies")
+    public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest movieRequest) {
         MovieEntity entity = dtoMapper.toMovieEntity(movieRequest);
         MovieEntity created = movieService.createMovie(entity);
         return ResponseEntity.status(HttpStatus.CREATED).body(dtoMapper.fromMovieEntity(created));
     }
 
-    @Override
-    public ResponseEntity<Movie> _moviesIdGet(Integer id) {
+    @GetMapping("/movies/{id}")
+    public ResponseEntity<Movie> getMovieById(@PathVariable("id") Integer id) {
         MovieEntity movie = movieService.getMovieById(id.longValue());
         return ResponseEntity.ok(dtoMapper.fromMovieEntity(movie));
     }
 
-    @Override
-    public ResponseEntity<Movie> _moviesIdPut(Integer id, MovieRequest movieRequest) {
+    @PutMapping("/movies/{id}")
+    public ResponseEntity<Movie> updateMovie(@PathVariable("id") Integer id, @RequestBody MovieRequest movieRequest) {
         MovieEntity entity = dtoMapper.toMovieEntity(movieRequest);
         MovieEntity updated = movieService.updateMovie(id.longValue(), entity);
         return ResponseEntity.ok(dtoMapper.fromMovieEntity(updated));
     }
 
-    @Override
-    public ResponseEntity<Void> _moviesIdDelete(Integer id) {
+    @DeleteMapping("/movies/{id}")
+    public ResponseEntity<Void> deleteMovie(@PathVariable("id") Integer id) {
         movieService.deleteMovie(id.longValue());
         return ResponseEntity.noContent().build();
     }
 
-    @Override
-    public ResponseEntity<MoviesCalculateTotalLengthPost200Response> _moviesCalculateTotalLengthPost() {
+    @PostMapping("/movies/calculate-total-length")
+    public ResponseEntity<MoviesCalculateTotalLengthPost200Response> calculateTotalLength() {
         Long totalLength = movieService.calculateTotalLength();
         
         MoviesCalculateTotalLengthPost200Response response = new MoviesCalculateTotalLengthPost200Response();
@@ -157,23 +150,23 @@ public class MoviesController implements MoviesApi {
         return ResponseEntity.ok(response);
     }
 
-    @Override
-    public ResponseEntity<MoviesCountByGenrePost200Response> _moviesCountByGenrePost(
-            MoviesCountByGenrePostRequest moviesCountByGenrePostRequest) {
+    @PostMapping("/movies/count-by-genre")
+    public ResponseEntity<MoviesCountByGenrePost200Response> countMoviesByGenre(
+            @RequestBody MoviesCountByGenrePostRequest request) {
         long count = movieService.countByGenre(
-                dtoMapper.toMovieGenreEntity(moviesCountByGenrePostRequest.getGenre()));
+                dtoMapper.toMovieGenreEntity(request.getGenre()));
         
         MoviesCountByGenrePost200Response response = new MoviesCountByGenrePost200Response();
-        response.setGenre(moviesCountByGenrePostRequest.getGenre());
+        response.setGenre(request.getGenre());
         response.setCount((int) count);
         return ResponseEntity.ok(response);
     }
 
-    @Override
-    public ResponseEntity<List<Movie>> _moviesSearchByNamePost(
-            MoviesSearchByNamePostRequest moviesSearchByNamePostRequest) {
+    @PostMapping("/movies/search-by-name")
+    public ResponseEntity<List<Movie>> searchMoviesByName(
+            @RequestBody MoviesSearchByNamePostRequest request) {
         List<MovieEntity> movies = movieService.searchByNamePrefix(
-                moviesSearchByNamePostRequest.getNamePrefix());
+                request.getNamePrefix());
         
         return ResponseEntity.ok(dtoMapper.fromMovieEntityList(movies));
     }
