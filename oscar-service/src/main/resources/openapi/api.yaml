@@ -1,0 +1,160 @@
+openapi: 3.0.3
+info:
+  title: Oscar Service API
+  description: |
+    Сервис для работы с Оскарами - проксирует запросы к internal API movie-service.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: ae.troshkin@gmail.com
+servers:
+  - url: http://localhost:9001/service2
+    description: Production server
+
+paths:
+  /oscar/directors/get-loosers:
+    post:
+      tags:
+        - Oscar Operations
+      summary: Получить список режиссеров-неудачников
+      description: |
+        Получает список режиссеров, ни один фильм которых не получил ни одного "Оскара".
+        Проксирует запрос к internal API movie-service.
+      operationId: getLoosers
+      responses:
+        '200':
+          description: Список режиссеров успешно получен
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DirectorInfo'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /oscar/directors/humiliate-by-genre/{genre}:
+    post:
+      tags:
+        - Oscar Operations
+      summary: Отобрать Оскары у режиссеров по жанру
+      description: |
+        Отбирает все "Оскары" у всех фильмов режиссеров, снявших хоть один фильм в указанном жанре.
+        Устанавливает oscarsCount = 0 для всех фильмов таких режиссеров.
+        Проксирует запрос к internal API movie-service.
+      operationId: humiliateByGenre
+      parameters:
+        - name: genre
+          in: path
+          required: true
+          description: Жанр фильма для определения режиссеров
+          schema:
+            $ref: '#/components/schemas/MovieGenre'
+      responses:
+        '200':
+          description: Операция успешно выполнена
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HumiliateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    DirectorInfo:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Имя режиссера
+          example: "Квентин Тарантино"
+        passportID:
+          type: string
+          description: ID паспорта режиссера
+          example: "AB1234567"
+        filmsCount:
+          type: integer
+          description: Количество фильмов режиссера без Оскаров
+          example: 5
+
+    HumiliateResponse:
+      type: object
+      properties:
+        affectedDirectors:
+          type: integer
+          description: Количество затронутых режиссеров
+          example: 3
+        affectedMovies:
+          type: integer
+          description: Количество затронутых фильмов
+          example: 10
+        removedOscars:
+          type: integer
+          description: Общее количество отобранных Оскаров
+          example: 15
+
+    MovieGenre:
+      type: string
+      description: Жанр фильма
+      enum:
+        - COMEDY
+        - ADVENTURE
+        - TRAGEDY
+        - SCIENCE_FICTION
+      example: COMEDY
+
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+          description: Краткое описание ошибки
+          example: "BAD_REQUEST"
+        message:
+          type: string
+          description: Подробное сообщение об ошибке
+          example: "Некорректный запрос"
+        timestamp:
+          type: string
+          format: date-time
+          description: Время возникновения ошибки
+          example: "2024-01-15T10:30:00Z"
+        path:
+          type: string
+          description: Путь запроса, где произошла ошибка
+          example: "/oscar/directors/get-loosers"
+
+  responses:
+    BadRequest:
+      description: Некорректный запрос - нарушены ограничения целостности данных
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "BAD_REQUEST"
+            message: "Некорректный запрос"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/oscar/directors/humiliate-by-genre/COMEDY"
+    InternalServerError:
+      description: Внутренняя ошибка сервера
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: "INTERNAL_SERVER_ERROR"
+            message: "Произошла внутренняя ошибка сервера"
+            timestamp: "2024-01-15T10:30:00Z"
+            path: "/oscar/directors/get-loosers"
+
+tags:
+  - name: Oscar Operations
+    description: Операции с "Оскарами"
+

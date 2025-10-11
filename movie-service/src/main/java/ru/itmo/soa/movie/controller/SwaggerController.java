@@ -47,7 +47,7 @@ public class SwaggerController {
         return getPublicApiDocs();
     }
 
-    @GetMapping(value = "/swagger-ui.html", produces = MediaType.TEXT_HTML_VALUE)
+    @GetMapping(value = "/swagger-ui", produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public byte[] getSwaggerUi() throws IOException {
         ClassPathResource resource = new ClassPathResource("META-INF/resources/swagger-ui.html");
