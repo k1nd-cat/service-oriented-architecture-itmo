@@ -49,7 +49,7 @@ public class SwaggerUIResource {
                 <script>
                     window.onload = function() {
                         const ui = SwaggerUIBundle({
-                            url: window.location.origin + window.location.pathname.replace('/swagger-ui', '/openapi.json'),
+                            url: window.location.origin + window.location.pathname.replace('/swagger-ui', '/api/v1/openapi.json'),
                             dom_id: '#swagger-ui',
                             deepLinking: true,
                             presets: [
