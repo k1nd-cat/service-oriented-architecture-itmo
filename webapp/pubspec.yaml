@@ -1,0 +1,33 @@
+name: webapp
+description: "ITMO SOA LABS"
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.0.3
+  riverpod_annotation: ^3.0.3
+  json_annotation: ^4.9.0
+  dio: ^5.9.0
+  fpdart: ^1.1.1
+  equatable: ^2.0.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  riverpod_generator: ^3.0.3
+  riverpod_lint: ^3.0.3
+  build_runner: ^2.4.6
+  json_serializable: ^6.7.1
+
+flutter:
+  uses-material-design: true

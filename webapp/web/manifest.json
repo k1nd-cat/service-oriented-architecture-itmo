@@ -1,6 +1,6 @@
 {
-    "name": "soaweb",
-    "short_name": "soaweb",
+    "name": "webapp",
+    "short_name": "webapp",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
