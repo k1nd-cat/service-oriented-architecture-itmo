@@ -12,7 +12,7 @@ class MovieDto {
   final String name;
   final CoordinatesDto coordinates;
   final DateTime? creationDate;
-  final int? oscarCount;
+  final int? oscarsCount;
   final double? totalBoxOffice;
   final int length;
   final PersonDto director;
@@ -24,7 +24,7 @@ class MovieDto {
     required this.name,
     required this.coordinates,
     required this.creationDate,
-    required this.oscarCount,
+    required this.oscarsCount,
     required this.totalBoxOffice,
     required this.length,
     required this.director,

@@ -49,7 +49,7 @@ class MovieDetailScreen extends ConsumerWidget {
                 Text(movie.name, style: Theme.of(context).textTheme.headlineMedium),
                 const SizedBox(height: 8),
                 Text('Жанр: ${movie.genre?.uiString ?? '-'}'),
-                Text('Оскары: ${movie.oscarCount ?? 0}'),
+                Text('Оскары: ${movie.oscarsCount ?? 0}'),
                 Text('Касса: ${movie.totalBoxOffice ?? 0}'),
                 Text('Длина: ${movie.length} мин.'),
                 Text('Дата создания: ${movie.creationDate.toIso8601String().substring(0, 10)}'),

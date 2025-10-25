@@ -5,8 +5,19 @@ import 'dio_client.dart';
 part 'network_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-Dio dio(Ref ref) {
-  final dioClient = DioClient();
+Dio movieServiceDio(Ref ref) {
+  final dioClient = MovieServiceClient();
+
+  ref.onDispose(() {
+    dioClient.dio.close();
+  });
+
+  return dioClient.dio;
+}
+
+@Riverpod(keepAlive: true)
+Dio oscarServiceDio(Ref ref) {
+  final dioClient = OscarServiceClient();
 
   ref.onDispose(() {
     dioClient.dio.close();

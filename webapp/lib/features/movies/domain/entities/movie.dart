@@ -7,7 +7,7 @@ class Movie {
   final String name;
   final Coordinates coordinates;
   final DateTime creationDate;
-  final int? oscarCount;
+  final int? oscarsCount;
   final double? totalBoxOffice;
   final int length;
   final Person director;
@@ -19,7 +19,7 @@ class Movie {
     required this.name,
     required this.coordinates,
     required this.creationDate,
-    required this.oscarCount,
+    required this.oscarsCount,
     required this.totalBoxOffice,
     required this.length,
     required this.director,

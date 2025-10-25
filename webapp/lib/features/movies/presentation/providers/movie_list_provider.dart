@@ -15,13 +15,11 @@ class MoviesFilterState extends _$MoviesFilterState {
       sort: null,
       name: null,
       genre: null,
-      totalBoxOffice: IntFilter(min: null, max: null),
-      length: IntFilter(min: null, max: null),
-      coordinates: CoordinatesFilter(
-        x: IntFilter(min: null, max: null),
-        y: DoubleFilter(min: null, max: null),
-      ),
-      operator: PersonFilter(name: null, nationality: null),
+      oscarsCount: null,
+      totalBoxOffice: null,
+      length: null,
+      coordinates: null,
+      operator: null,
     );
   }
 

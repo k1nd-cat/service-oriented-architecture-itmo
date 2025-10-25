@@ -25,7 +25,7 @@ class _MovieFormScreenState extends ConsumerState<MovieFormScreen> {
   final _formKey = GlobalKey<FormState>();
 
   late TextEditingController _nameController;
-  late TextEditingController _oscarCountController;
+  late TextEditingController _oscarsCountController;
   late TextEditingController _totalBoxOfficeController;
   late TextEditingController _lengthController;
   MovieGenre? _selectedGenre;
@@ -59,7 +59,7 @@ class _MovieFormScreenState extends ConsumerState<MovieFormScreen> {
     final movie = widget.movieToEdit;
 
     _nameController = TextEditingController(text: movie?.name);
-    _oscarCountController = TextEditingController(text: movie?.oscarCount?.toString());
+    _oscarsCountController = TextEditingController(text: movie?.oscarsCount?.toString());
     _totalBoxOfficeController = TextEditingController(text: movie?.totalBoxOffice?.toString());
     _lengthController = TextEditingController(text: movie?.length.toString());
     _selectedGenre = movie?.genre;
@@ -89,7 +89,7 @@ class _MovieFormScreenState extends ConsumerState<MovieFormScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _oscarCountController.dispose();
+    _oscarsCountController.dispose();
     _totalBoxOfficeController.dispose();
     _lengthController.dispose();
     _coordXController.dispose();
@@ -136,7 +136,7 @@ class _MovieFormScreenState extends ConsumerState<MovieFormScreen> {
     final draft = MovieDraft(
       id: widget.movieToEdit?.id,
       name: _nameController.text,
-      oscarCount: int.tryParse(_oscarCountController.text),
+      oscarsCount: int.tryParse(_oscarsCountController.text),
       totalBoxOffice: double.tryParse(_totalBoxOfficeController.text),
       length: int.parse(_lengthController.text),
       genre: _selectedGenre,
@@ -206,7 +206,7 @@ class _MovieFormScreenState extends ConsumerState<MovieFormScreen> {
               ),
               _gap(),
               _buildTextFormField(
-                controller: _oscarCountController,
+                controller: _oscarsCountController,
                 label: 'Кол-во Оскаров ( > 0 )',
                 keyboardType: TextInputType.number,
                 validator: (val) => _validateInt(val, min: 1, nullable: true),

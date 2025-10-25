@@ -41,7 +41,7 @@ final class MoviesFilterStateProvider
   }
 }
 
-String _$moviesFilterStateHash() => r'f1a19bf7e38f871199558c5402d76e88933e2f35';
+String _$moviesFilterStateHash() => r'ef225a4f8c0e0757ec09da084b3e5b341134c932';
 
 abstract class _$MoviesFilterState extends $Notifier<MoviesFilter> {
   MoviesFilter build();

@@ -10,10 +10,10 @@ part 'providers.g.dart';
 
 @riverpod
 MovieRemoteDataSource moviesRemoteDataSource(Ref ref) {
-  return MoviesRemoteDataSourceImpl(ref.watch(dioProvider));
+  return MoviesRemoteDataSourceImpl(ref.watch(movieServiceDioProvider));
 }
 
 @riverpod
 OscarRemoteDataSource oscarRemoteDataSource(Ref ref) {
-  return OscarRemoteDataSourceImpl(ref.watch(dioProvider));
+  return OscarRemoteDataSourceImpl(ref.watch(oscarServiceDioProvider));
 }

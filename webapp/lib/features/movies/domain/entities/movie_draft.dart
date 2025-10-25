@@ -7,7 +7,7 @@ class MovieDraft {
   final int? id;
   final String name;
   final Coordinates coordinates;
-  final int? oscarCount;
+  final int? oscarsCount;
   final double? totalBoxOffice;
   final int length;
   final Person director;
@@ -18,7 +18,7 @@ class MovieDraft {
     this.id,
     required this.name,
     required this.coordinates,
-    required this.oscarCount,
+    required this.oscarsCount,
     required this.totalBoxOffice,
     required this.length,
     required this.director,

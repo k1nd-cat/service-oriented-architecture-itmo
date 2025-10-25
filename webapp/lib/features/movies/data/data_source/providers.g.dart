@@ -55,7 +55,7 @@ final class MoviesRemoteDataSourceProvider
 }
 
 String _$moviesRemoteDataSourceHash() =>
-    r'3268cff1379e8a559f96ca5cb8490eb1fdd1e390';
+    r'00d1e0bb4e1a2ad99a84e5185953f717ad26dff0';
 
 @ProviderFor(oscarRemoteDataSource)
 const oscarRemoteDataSourceProvider = OscarRemoteDataSourceProvider._();
@@ -103,4 +103,4 @@ final class OscarRemoteDataSourceProvider
 }
 
 String _$oscarRemoteDataSourceHash() =>
-    r'236f1bcec1688dab837a427d039fd6289d4b29e0';
+    r'e0326c9523dd730c8ad54260100dbec444a09922';

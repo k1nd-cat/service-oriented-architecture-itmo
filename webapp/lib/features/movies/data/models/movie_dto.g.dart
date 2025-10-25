@@ -15,7 +15,7 @@ MovieDto _$MovieDtoFromJson(Map<String, dynamic> json) => MovieDto(
   creationDate: json['creationDate'] == null
       ? null
       : DateTime.parse(json['creationDate'] as String),
-  oscarCount: (json['oscarCount'] as num?)?.toInt(),
+  oscarsCount: (json['oscarsCount'] as num?)?.toInt(),
   totalBoxOffice: (json['totalBoxOffice'] as num?)?.toDouble(),
   length: (json['length'] as num).toInt(),
   director: PersonDto.fromJson(json['director'] as Map<String, dynamic>),
@@ -30,7 +30,7 @@ Map<String, dynamic> _$MovieDtoToJson(MovieDto instance) => <String, dynamic>{
   'name': instance.name,
   'coordinates': instance.coordinates,
   'creationDate': instance.creationDate?.toIso8601String(),
-  'oscarCount': instance.oscarCount,
+  'oscarsCount': instance.oscarsCount,
   'totalBoxOffice': instance.totalBoxOffice,
   'length': instance.length,
   'director': instance.director,

@@ -14,7 +14,7 @@ class MovieMapper {
       creationDate: dto.creationDate!,
       length: dto.length,
       director: PersonMapper.toEntity(dto.director),
-      oscarCount: dto.oscarCount,
+      oscarsCount: dto.oscarsCount,
       totalBoxOffice: dto.totalBoxOffice,
       genre: dto.genre,
       operator: dto.operator != null
@@ -29,7 +29,7 @@ class MovieMapper {
       name: entity.name,
       coordinates: CoordinatesMapper.toDto(entity.coordinates),
       creationDate: null,
-      oscarCount: entity.oscarCount,
+      oscarsCount: entity.oscarsCount,
       totalBoxOffice: entity.totalBoxOffice,
       length: entity.length,
       director: PersonMapper.toDto(entity.director),

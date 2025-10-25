@@ -11,6 +11,7 @@ Map<String, dynamic> _$MoviesFilterToJson(MoviesFilter instance) =>
       'sort': instance.sort,
       'name': instance.name,
       'genre': _$MovieGenreEnumMap[instance.genre],
+      'oscarsCount': instance.oscarsCount,
       'totalBoxOffice': instance.totalBoxOffice,
       'length': instance.length,
       'coordinates': instance.coordinates,

@@ -9,21 +9,21 @@ class MoviesFilter {
   final String? sort;
   final String? name;
   final MovieGenre? genre;
-  // final IntFilter oscarCount;
-  final IntFilter totalBoxOffice;
-  final IntFilter length;
-  final CoordinatesFilter coordinates;
-  final PersonFilter operator;
+  final IntFilter? oscarsCount;
+  final DoubleFilter? totalBoxOffice;
+  final IntFilter? length;
+  final CoordinatesFilter? coordinates;
+  final PersonFilter? operator;
 
   const MoviesFilter({
-    required this.sort,
-    required this.name,
-    required this.genre,
-    // required this.oscarCount,
-    required this.totalBoxOffice,
-    required this.length,
-    required this.coordinates,
-    required this.operator,
+    this.sort,
+    this.name,
+    this.genre,
+    this.oscarsCount,
+    this.totalBoxOffice,
+    this.length,
+    this.coordinates,
+    this.operator,
   });
 
   Map<String, dynamic> toJson() => _$MoviesFilterToJson(this);
@@ -32,8 +32,8 @@ class MoviesFilter {
     String? sort,
     String? name,
     MovieGenre? genre,
-    IntFilter? oscarCount,
-    IntFilter? totalBoxOffice,
+    IntFilter? oscarsCount,
+    DoubleFilter? totalBoxOffice,
     IntFilter? length,
     CoordinatesFilter? coordinates,
     PersonFilter? operator,
@@ -42,7 +42,7 @@ class MoviesFilter {
       sort: sort ?? this.sort,
       name: name ?? this.name,
       genre: genre ?? this.genre,
-      // oscarCount: oscarCount ?? this.oscarCount,
+      oscarsCount: oscarsCount ?? this.oscarsCount,
       totalBoxOffice: totalBoxOffice ?? this.totalBoxOffice,
       length: length ?? this.length,
       coordinates: coordinates ?? this.coordinates,
@@ -58,8 +58,8 @@ class PersonFilter {
   final Country? nationality;
 
   const PersonFilter({
-    required this.name,
-    required this.nationality,
+    this.name,
+    this.nationality,
   });
 
   Map<String, dynamic> toJson() => _$PersonFilterToJson(this);
@@ -77,12 +77,12 @@ class PersonFilter {
 
 @JsonSerializable(createFactory: false)
 class CoordinatesFilter {
-  final IntFilter x;
-  final DoubleFilter y;
+  final IntFilter? x;
+  final DoubleFilter? y;
 
   const CoordinatesFilter({
-    required this.x,
-    required this.y,
+    this.x,
+    this.y,
   });
 
   Map<String, dynamic> toJson() => _$CoordinatesFilterToJson(this);
@@ -104,8 +104,8 @@ class DoubleFilter {
   final double? max;
 
   const DoubleFilter({
-    required this.min,
-    required this.max,
+    this.min,
+    this.max,
   });
 
   Map<String, dynamic> toJson() => _$DoubleFilterToJson(this);
@@ -127,8 +127,8 @@ class IntFilter {
   final int? max;
 
   const IntFilter({
-    required this.min,
-    required this.max,
+    this.min,
+    this.max,
   });
 
   Map<String, dynamic> toJson() => _$IntFilterToJson(this);

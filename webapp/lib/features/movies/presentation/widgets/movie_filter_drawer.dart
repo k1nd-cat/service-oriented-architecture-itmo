@@ -39,15 +39,22 @@ class MovieFilterDrawer extends ConsumerWidget {
 
               _buildSectionTitle(context, 'Числовые'),
               _buildIntFilter(
+                label: 'Оскары',
+                current: currentFilter.oscarsCount ?? const IntFilter(min: null, max: null),
+                onUpdate: (filter) => filterNotifier.updateFilter(
+                  currentFilter.copyWith(oscarsCount: filter),
+                ),
+              ),
+              _buildIntFilter(
                 label: 'Длина (мин)',
-                current: currentFilter.length,
+                current: currentFilter.length ?? const IntFilter(min: null, max: null),
                 onUpdate: (filter) => filterNotifier.updateFilter(
                   currentFilter.copyWith(length: filter),
                 ),
               ),
-              _buildIntFilter(
+              _buildDoubleFilter(
                 label: 'Касса (\$)',
-                current: currentFilter.totalBoxOffice,
+                current: currentFilter.totalBoxOffice ?? const DoubleFilter(min: null, max: null),
                 onUpdate: (filter) => filterNotifier.updateFilter(
                   currentFilter.copyWith(totalBoxOffice: filter),
                 ),
@@ -58,19 +65,19 @@ class MovieFilterDrawer extends ConsumerWidget {
               _buildSectionTitle(context, 'Координаты'),
               _buildIntFilter(
                 label: 'X Координата',
-                current: currentFilter.coordinates.x,
+                current: currentFilter.coordinates?.x ?? const IntFilter(min: null, max: null),
                 onUpdate: (filter) => filterNotifier.updateFilter(
                   currentFilter.copyWith(
-                    coordinates: currentFilter.coordinates.copyWith(x: filter),
+                    coordinates: (currentFilter.coordinates ?? const CoordinatesFilter(x: null, y: null)).copyWith(x: filter),
                   ),
                 ),
               ),
               _buildDoubleFilter(
                 label: 'Y Координата',
-                current: currentFilter.coordinates.y,
+                current: currentFilter.coordinates?.y ?? const DoubleFilter(min: null, max: null),
                 onUpdate: (filter) => filterNotifier.updateFilter(
                   currentFilter.copyWith(
-                    coordinates: currentFilter.coordinates.copyWith(y: filter),
+                    coordinates: (currentFilter.coordinates ?? const CoordinatesFilter(x: null, y: null)).copyWith(y: filter),
                   ),
                 ),
               ),
@@ -79,7 +86,7 @@ class MovieFilterDrawer extends ConsumerWidget {
 
               _buildSectionTitle(context, 'Оператор'),
               _buildPersonFilter(
-                current: currentFilter.operator,
+                current: currentFilter.operator ?? const PersonFilter(name: null, nationality: null),
                 onUpdate: (filter) => filterNotifier.updateFilter(
                   currentFilter.copyWith(operator: filter),
                 ),
