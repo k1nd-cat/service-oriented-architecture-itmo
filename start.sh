@@ -70,6 +70,29 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}Oscar-service build completed${NC}"
 
+echo -e "${BLUE}Building frontend (webapp)...${NC}"
+cd "${SCRIPT_DIR}/webapp"
+flutter pub get
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Flutter pub get failed!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Flutter dependencies installed${NC}"
+
+dart run build_runner build --delete-conflicting-outputs
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Build runner failed!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Build runner completed${NC}"
+
+flutter build web
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Flutter web build failed!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Frontend build completed${NC}"
+
 cd "${SCRIPT_DIR}"
 echo -e "${GREEN}All builds completed successfully${NC}"
 
