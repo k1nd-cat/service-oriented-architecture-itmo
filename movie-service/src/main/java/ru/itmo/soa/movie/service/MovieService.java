@@ -63,13 +63,11 @@ public class MovieService {
         log.info("Creating movie: {}", movie.getName());
         validateMovie(movie);
         
-        // Process director
-        if (movie.getDirector() != null) {
+                if (movie.getDirector() != null) {
             movie.setDirector(processOrCreatePerson(movie.getDirector()));
         }
         
-        // Process operator
-        if (movie.getOperator() != null) {
+                if (movie.getOperator() != null) {
             movie.setOperator(processOrCreatePerson(movie.getOperator()));
         }
         
@@ -83,21 +81,18 @@ public class MovieService {
         MovieEntity existingMovie = getMovieById(id);
         validateMovie(updatedMovie);
         
-        // Update fields
-        existingMovie.setName(updatedMovie.getName());
+                existingMovie.setName(updatedMovie.getName());
         existingMovie.setCoordinates(updatedMovie.getCoordinates());
         existingMovie.setOscarsCount(updatedMovie.getOscarsCount());
         existingMovie.setTotalBoxOffice(updatedMovie.getTotalBoxOffice());
         existingMovie.setLength(updatedMovie.getLength());
         existingMovie.setGenre(updatedMovie.getGenre());
         
-        // Process director
-        if (updatedMovie.getDirector() != null) {
+                if (updatedMovie.getDirector() != null) {
             existingMovie.setDirector(processOrCreatePerson(updatedMovie.getDirector()));
         }
         
-        // Process operator
-        if (updatedMovie.getOperator() != null) {
+                if (updatedMovie.getOperator() != null) {
             existingMovie.setOperator(processOrCreatePerson(updatedMovie.getOperator()));
         }
         
@@ -136,8 +131,7 @@ public class MovieService {
     public List<Map<String, Object>> getDirectorsWithoutOscars() {
         log.info("Getting directors without oscars");
         
-        // Find all directors
-        Map<String, PersonEntity> allDirectors = new HashMap<>();
+                Map<String, PersonEntity> allDirectors = new HashMap<>();
         List<MovieEntity> allMovies = movieRepository.findAll();
         
         for (MovieEntity movie : allMovies) {
@@ -145,14 +139,12 @@ public class MovieService {
             allDirectors.putIfAbsent(passportId, movie.getDirector());
         }
         
-        // Find directors who have at least one movie with oscars > 0
-        Set<String> directorsWithOscars = allMovies.stream()
+                Set<String> directorsWithOscars = allMovies.stream()
                 .filter(m -> m.getOscarsCount() != null && m.getOscarsCount() > 0)
                 .map(m -> m.getDirector().getPassportID())
                 .collect(Collectors.toSet());
         
-        // Return directors without oscars
-        List<Map<String, Object>> result = new ArrayList<>();
+                List<Map<String, Object>> result = new ArrayList<>();
         for (Map.Entry<String, PersonEntity> entry : allDirectors.entrySet()) {
             if (!directorsWithOscars.contains(entry.getKey())) {
                 PersonEntity director = entry.getValue();
@@ -175,8 +167,7 @@ public class MovieService {
     public Map<String, Object> humiliateDirectorsByGenre(MovieGenre genre) {
         log.info("Humiliating directors by genre: {}", genre);
         
-        // Find all directors who directed at least one movie in the given genre
-        List<String> directorPassportIds = movieRepository.findDirectorPassportIDsByGenre(genre);
+                List<String> directorPassportIds = movieRepository.findDirectorPassportIDsByGenre(genre);
         
         if (directorPassportIds.isEmpty()) {
             return Map.of(
@@ -186,17 +177,14 @@ public class MovieService {
             );
         }
         
-        // Find all movies by these directors
-        List<MovieEntity> affectedMovies = movieRepository.findByDirectorPassportIDIn(directorPassportIds);
+                List<MovieEntity> affectedMovies = movieRepository.findByDirectorPassportIDIn(directorPassportIds);
         
-        // Calculate removed oscars
-        long removedOscars = affectedMovies.stream()
+                long removedOscars = affectedMovies.stream()
                 .filter(m -> m.getOscarsCount() != null && m.getOscarsCount() > 0)
                 .mapToLong(MovieEntity::getOscarsCount)
                 .sum();
         
-        // Set oscars count to 0 for all movies
-        affectedMovies.forEach(movie -> movie.setOscarsCount(0));
+                affectedMovies.forEach(movie -> movie.setOscarsCount(0));
         movieRepository.saveAll(affectedMovies);
         
         return Map.of(
@@ -213,63 +201,54 @@ public class MovieService {
             return spec;
         }
         
-        // Name filter
-        if (filters.containsKey("name")) {
+                if (filters.containsKey("name")) {
             spec = spec.and(MovieSpecification.filterByName((String) filters.get("name")));
         }
         
-        // Genre filter
-        if (filters.containsKey("genre")) {
+                if (filters.containsKey("genre")) {
             spec = spec.and(MovieSpecification.filterByGenre((MovieGenre) filters.get("genre")));
         }
         
-        // Oscars count filter
-        if (filters.containsKey("oscarsCountMin") || filters.containsKey("oscarsCountMax")) {
+                if (filters.containsKey("oscarsCountMin") || filters.containsKey("oscarsCountMax")) {
             spec = spec.and(MovieSpecification.filterByOscarsCount(
                     (Integer) filters.get("oscarsCountMin"),
                     (Integer) filters.get("oscarsCountMax")
             ));
         }
         
-        // Total box office filter
-        if (filters.containsKey("totalBoxOfficeMin") || filters.containsKey("totalBoxOfficeMax")) {
+                if (filters.containsKey("totalBoxOfficeMin") || filters.containsKey("totalBoxOfficeMax")) {
             spec = spec.and(MovieSpecification.filterByTotalBoxOffice(
                     (Double) filters.get("totalBoxOfficeMin"),
                     (Double) filters.get("totalBoxOfficeMax")
             ));
         }
         
-        // Length filter
-        if (filters.containsKey("lengthMin") || filters.containsKey("lengthMax")) {
+                if (filters.containsKey("lengthMin") || filters.containsKey("lengthMax")) {
             spec = spec.and(MovieSpecification.filterByLength(
                     (Long) filters.get("lengthMin"),
                     (Long) filters.get("lengthMax")
             ));
         }
         
-        // Coordinates X filter
-        if (filters.containsKey("coordinatesXMin") || filters.containsKey("coordinatesXMax")) {
+                if (filters.containsKey("coordinatesXMin") || filters.containsKey("coordinatesXMax")) {
             spec = spec.and(MovieSpecification.filterByCoordinatesX(
                     (Integer) filters.get("coordinatesXMin"),
                     (Integer) filters.get("coordinatesXMax")
             ));
         }
         
-        // Coordinates Y filter
-        if (filters.containsKey("coordinatesYMin") || filters.containsKey("coordinatesYMax")) {
+                if (filters.containsKey("coordinatesYMin") || filters.containsKey("coordinatesYMax")) {
             spec = spec.and(MovieSpecification.filterByCoordinatesY(
                     (Float) filters.get("coordinatesYMin"),
                     (Float) filters.get("coordinatesYMax")
             ));
         }
         
-        // Operator name filter
-        if (filters.containsKey("operatorName")) {
+                if (filters.containsKey("operatorName")) {
             spec = spec.and(MovieSpecification.filterByOperatorName((String) filters.get("operatorName")));
         }
         
-        // Operator nationality filter
-        if (filters.containsKey("operatorNationality")) {
+                if (filters.containsKey("operatorNationality")) {
             spec = spec.and(MovieSpecification.filterByOperatorNationality((Country) filters.get("operatorNationality")));
         }
         

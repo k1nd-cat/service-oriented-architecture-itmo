@@ -5,14 +5,10 @@ import ru.itmo.soa.movie.entity.*;
 
 import java.util.List;
 
-/**
- * MapStruct mapper for converting between generated DTOs and Entity classes
- */
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DtoMapper {
 
-    // ============= Public API Mappings =============
-    
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     MovieEntity toMovieEntity(ru.itmo.soa.movie.dto.publicapi.MovieRequest movieRequest);
@@ -22,15 +18,13 @@ public interface DtoMapper {
 
     List<ru.itmo.soa.movie.dto.publicapi.Movie> fromMovieEntityList(List<MovieEntity> entities);
 
-    // ============= Internal API Mappings =============
-    
+
     @Mapping(target = "id", expression = "java(entity.getId() != null ? entity.getId().intValue() : null)")
     ru.itmo.soa.movie.dto.internal.Movie fromMovieEntityInternal(MovieEntity entity);
 
     List<ru.itmo.soa.movie.dto.internal.Movie> fromMovieEntityListInternal(List<MovieEntity> entities);
 
-    // ============= Nested Objects - Public API =============
-    
+
     CoordinatesEntity toCoordinatesEntity(ru.itmo.soa.movie.dto.publicapi.Coordinates dto);
     
     ru.itmo.soa.movie.dto.publicapi.Coordinates fromCoordinatesEntity(CoordinatesEntity entity);
@@ -43,18 +37,15 @@ public interface DtoMapper {
     
     ru.itmo.soa.movie.dto.publicapi.Location fromLocationEntity(LocationEntity entity);
 
-    // ============= Nested Objects - Internal API =============
-    
+
     ru.itmo.soa.movie.dto.internal.Coordinates fromCoordinatesEntityInternal(CoordinatesEntity entity);
 
     ru.itmo.soa.movie.dto.internal.Person fromPersonEntityInternal(PersonEntity entity);
 
     ru.itmo.soa.movie.dto.internal.Location fromLocationEntityInternal(LocationEntity entity);
 
-    // ============= Enum Mappings =============
-    
-    // MovieGenre
-    default ru.itmo.soa.movie.entity.enums.MovieGenre toMovieGenreEntity(ru.itmo.soa.movie.dto.publicapi.MovieGenre dto) {
+
+        default ru.itmo.soa.movie.entity.enums.MovieGenre toMovieGenreEntity(ru.itmo.soa.movie.dto.publicapi.MovieGenre dto) {
         return dto == null ? null : ru.itmo.soa.movie.entity.enums.MovieGenre.valueOf(dto.name());
     }
 
@@ -70,8 +61,7 @@ public interface DtoMapper {
         return entity == null ? null : ru.itmo.soa.movie.dto.internal.MovieGenre.valueOf(entity.name());
     }
 
-    // EyeColor
-    default ru.itmo.soa.movie.entity.enums.EyeColor toEyeColorEntity(ru.itmo.soa.movie.dto.publicapi.EyeColor dto) {
+        default ru.itmo.soa.movie.entity.enums.EyeColor toEyeColorEntity(ru.itmo.soa.movie.dto.publicapi.EyeColor dto) {
         return dto == null ? null : ru.itmo.soa.movie.entity.enums.EyeColor.valueOf(dto.name());
     }
 
@@ -83,8 +73,7 @@ public interface DtoMapper {
         return entity == null ? null : ru.itmo.soa.movie.dto.internal.EyeColor.valueOf(entity.name());
     }
 
-    // HairColor
-    default ru.itmo.soa.movie.entity.enums.HairColor toHairColorEntity(ru.itmo.soa.movie.dto.publicapi.HairColor dto) {
+        default ru.itmo.soa.movie.entity.enums.HairColor toHairColorEntity(ru.itmo.soa.movie.dto.publicapi.HairColor dto) {
         return dto == null ? null : ru.itmo.soa.movie.entity.enums.HairColor.valueOf(dto.name());
     }
 
@@ -96,8 +85,7 @@ public interface DtoMapper {
         return entity == null ? null : ru.itmo.soa.movie.dto.internal.HairColor.valueOf(entity.name());
     }
 
-    // Country
-    default ru.itmo.soa.movie.entity.enums.Country toCountryEntity(ru.itmo.soa.movie.dto.publicapi.Country dto) {
+        default ru.itmo.soa.movie.entity.enums.Country toCountryEntity(ru.itmo.soa.movie.dto.publicapi.Country dto) {
         return dto == null ? null : ru.itmo.soa.movie.entity.enums.Country.valueOf(dto.name());
     }
 

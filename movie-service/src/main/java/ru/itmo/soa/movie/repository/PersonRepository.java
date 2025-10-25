@@ -9,14 +9,8 @@ import java.util.Optional;
 @Repository
 public interface PersonRepository extends JpaRepository<PersonEntity, Long> {
 
-    /**
-     * Find person by passport ID
-     */
-    Optional<PersonEntity> findByPassportID(String passportID);
+        Optional<PersonEntity> findByPassportID(String passportID);
 
-    /**
-     * Check if person exists by passport ID
-     */
-    boolean existsByPassportID(String passportID);
+        boolean existsByPassportID(String passportID);
 }
 
