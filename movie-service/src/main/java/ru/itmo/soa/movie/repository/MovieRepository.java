@@ -13,25 +13,25 @@ import java.util.List;
 @Repository
 public interface MovieRepository extends JpaRepository<MovieEntity, Long>, JpaSpecificationExecutor<MovieEntity> {
 
-        List<MovieEntity> findByNameStartingWithIgnoreCase(String namePrefix);
+    List<MovieEntity> findByNameStartingWithIgnoreCase(String namePrefix);
 
-        long countByGenre(MovieGenre genre);
+    long countByGenre(MovieGenre genre);
 
-        @Query("SELECT COALESCE(SUM(m.length), 0) FROM MovieEntity m")
+    @Query("SELECT COALESCE(SUM(m.length), 0) FROM MovieEntity m")
     Long calculateTotalLength();
 
-        @Query("SELECT m FROM MovieEntity m WHERE m.director.passportID = :passportID")
+    @Query("SELECT m FROM MovieEntity m WHERE m.director.passportID = :passportID")
     List<MovieEntity> findByDirectorPassportID(@Param("passportID") String passportID);
 
-        @Query("SELECT DISTINCT m.director.passportID FROM MovieEntity m WHERE m.genre = :genre")
+    @Query("SELECT DISTINCT m.director.passportID FROM MovieEntity m WHERE m.genre = :genre")
     List<String> findDirectorPassportIDsByGenre(@Param("genre") MovieGenre genre);
 
-        @Query("SELECT m FROM MovieEntity m WHERE m.director.passportID IN :passportIDs")
+    @Query("SELECT m FROM MovieEntity m WHERE m.director.passportID IN :passportIDs")
     List<MovieEntity> findByDirectorPassportIDIn(@Param("passportIDs") List<String> passportIDs);
 
-        @Query("SELECT DISTINCT m.director FROM MovieEntity m " +
+    @Query("SELECT DISTINCT m.director FROM MovieEntity m " +
            "WHERE m.director.passportID NOT IN " +
            "(SELECT m2.director.passportID FROM MovieEntity m2 WHERE m2.oscarsCount > 0 OR m2.oscarsCount IS NULL)")
     List<Object[]> findDirectorsWithZeroOscars();
-}
 
+}

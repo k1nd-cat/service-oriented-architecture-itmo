@@ -1,16 +1,17 @@
 package ru.itmo.soa.movie.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.soa.movie.dto.publicapi.*;
 import ru.itmo.soa.movie.entity.MovieEntity;
-import ru.itmo.soa.movie.mapper.DtoMapper;
 import ru.itmo.soa.movie.service.MovieService;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -18,7 +19,7 @@ import java.util.*;
 public class MoviesController {
 
     private final MovieService movieService;
-    private final DtoMapper dtoMapper;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/movies/filters")
     public ResponseEntity<MoviesFiltersPost200Response> getMoviesWithFilters(
@@ -37,7 +38,8 @@ public class MoviesController {
             }
             
             if (movieSearchRequest.getGenre() != null) {
-                filters.put("genre", dtoMapper.toMovieGenreEntity(movieSearchRequest.getGenre()));
+                filters.put("genre", modelMapper.map(movieSearchRequest.getGenre(), 
+                    ru.itmo.soa.movie.entity.enums.MovieGenre.class));
             }
             
             if (movieSearchRequest.getOscarsCount() != null) {
@@ -98,7 +100,8 @@ public class MoviesController {
                     filters.put("operatorName", operator.getName());
                 }
                 if (operator.getNationality() != null) {
-                    filters.put("operatorNationality", dtoMapper.toCountryEntity(operator.getNationality()));
+                    filters.put("operatorNationality", modelMapper.map(operator.getNationality(), 
+                        ru.itmo.soa.movie.entity.enums.Country.class));
                 }
             }
         }
@@ -106,7 +109,9 @@ public class MoviesController {
         Page<MovieEntity> moviesPage = movieService.getAllMovies(filters, sortString, page, size);
         
         MoviesFiltersPost200Response response = new MoviesFiltersPost200Response();
-        response.setContent(dtoMapper.fromMovieEntityList(moviesPage.getContent()));
+        response.setContent(moviesPage.getContent().stream()
+                .map(entity -> modelMapper.map(entity, Movie.class))
+                .collect(Collectors.toList()));
         response.setPage(moviesPage.getNumber() + 1);
         response.setSize(moviesPage.getSize());
         response.setTotalElements((int) moviesPage.getTotalElements());
@@ -117,22 +122,22 @@ public class MoviesController {
 
     @PostMapping("/movies")
     public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest movieRequest) {
-        MovieEntity entity = dtoMapper.toMovieEntity(movieRequest);
+        MovieEntity entity = modelMapper.map(movieRequest, MovieEntity.class);
         MovieEntity created = movieService.createMovie(entity);
-        return ResponseEntity.status(HttpStatus.CREATED).body(dtoMapper.fromMovieEntity(created));
+        return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(created, Movie.class));
     }
 
     @GetMapping("/movies/{id}")
     public ResponseEntity<Movie> getMovieById(@PathVariable("id") Integer id) {
         MovieEntity movie = movieService.getMovieById(id.longValue());
-        return ResponseEntity.ok(dtoMapper.fromMovieEntity(movie));
+        return ResponseEntity.ok(modelMapper.map(movie, Movie.class));
     }
 
     @PutMapping("/movies/{id}")
     public ResponseEntity<Movie> updateMovie(@PathVariable("id") Integer id, @RequestBody MovieRequest movieRequest) {
-        MovieEntity entity = dtoMapper.toMovieEntity(movieRequest);
+        MovieEntity entity = modelMapper.map(movieRequest, MovieEntity.class);
         MovieEntity updated = movieService.updateMovie(id.longValue(), entity);
-        return ResponseEntity.ok(dtoMapper.fromMovieEntity(updated));
+        return ResponseEntity.ok(modelMapper.map(updated, Movie.class));
     }
 
     @DeleteMapping("/movies/{id}")
@@ -154,7 +159,7 @@ public class MoviesController {
     public ResponseEntity<MoviesCountByGenrePost200Response> countMoviesByGenre(
             @RequestBody MoviesCountByGenrePostRequest request) {
         long count = movieService.countByGenre(
-                dtoMapper.toMovieGenreEntity(request.getGenre()));
+                modelMapper.map(request.getGenre(), ru.itmo.soa.movie.entity.enums.MovieGenre.class));
         
         MoviesCountByGenrePost200Response response = new MoviesCountByGenrePost200Response();
         response.setGenre(request.getGenre());
@@ -168,12 +173,16 @@ public class MoviesController {
         List<MovieEntity> movies = movieService.searchByNamePrefix(
                 request.getNamePrefix());
         
-        return ResponseEntity.ok(dtoMapper.fromMovieEntityList(movies));
+        return ResponseEntity.ok(movies.stream()
+                .map(entity -> modelMapper.map(entity, Movie.class))
+                .collect(Collectors.toList()));
     }
 
     @GetMapping("/movies")
     public ResponseEntity<List<Movie>> getAllMovies() {
         List<MovieEntity> movies = movieService.getAllMovies();
-        return ResponseEntity.ok(dtoMapper.fromMovieEntityList(movies));
+        return ResponseEntity.ok(movies.stream()
+                .map(entity -> modelMapper.map(entity, Movie.class))
+                .collect(Collectors.toList()));
     }
 }

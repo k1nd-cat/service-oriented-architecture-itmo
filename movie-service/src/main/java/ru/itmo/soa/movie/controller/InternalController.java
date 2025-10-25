@@ -1,12 +1,12 @@
 package ru.itmo.soa.movie.controller;
 
 import lombok.RequiredArgsConstructor;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.soa.movie.dto.internal.MovieGenre;
 import ru.itmo.soa.movie.dto.internal.OscarDirectorsGetLoosersPost200ResponseInner;
 import ru.itmo.soa.movie.dto.internal.OscarDirectorsHumiliateByGenreGenrePost200Response;
-import ru.itmo.soa.movie.mapper.DtoMapper;
 import ru.itmo.soa.movie.service.MovieService;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class InternalController {
 
     private final MovieService movieService;
-    private final DtoMapper dtoMapper;
+    private final ModelMapper modelMapper;
 
     @PostMapping("/oscar/directors/get-loosers")
     public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> getDirectorsWithoutOscars() {
@@ -43,14 +43,14 @@ public class InternalController {
     public ResponseEntity<OscarDirectorsHumiliateByGenreGenrePost200Response> humiliateDirectorsByGenre(
             @PathVariable("genre") MovieGenre genre) {
         Map<String, Object> result = movieService.humiliateDirectorsByGenre(
-                dtoMapper.toMovieGenreEntity(genre));
-        
+                modelMapper.map(genre, ru.itmo.soa.movie.entity.enums.MovieGenre.class));
+
         OscarDirectorsHumiliateByGenreGenrePost200Response response = 
                 new OscarDirectorsHumiliateByGenreGenrePost200Response();
         response.setAffectedDirectors((Integer) result.get("affectedDirectors"));
         response.setAffectedMovies((Integer) result.get("affectedMovies"));
         response.setRemovedOscars(((Long) result.get("removedOscars")).intValue());
-        
+
         return ResponseEntity.ok(response);
     }
 }
