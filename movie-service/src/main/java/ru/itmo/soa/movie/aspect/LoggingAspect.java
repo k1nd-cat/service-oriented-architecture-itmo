@@ -13,34 +13,23 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-/**
- * Аспект для автоматического логирования всех входящих HTTP запросов в контроллерах
- */
 @Slf4j
 @Aspect
 @Component
 public class LoggingAspect {
 
-    /**
-     * Pointcut для всех методов в контроллерах
-     */
     @Pointcut("within(@org.springframework.web.bind.annotation.RestController *)")
     public void controllerMethods() {
     }
 
-    /**
-     * Around advice для логирования входящих запросов и времени выполнения
-     */
     @Around("controllerMethods()")
     public Object logAround(ProceedingJoinPoint joinPoint) throws Throwable {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
-        
-        // Получаем информацию о HTTP методе и пути
+
         String httpMethod = getHttpMethod(method);
         String path = getRequestPath(method);
-        
-        // Логируем входящий запрос
+
         if (httpMethod != null && path != null) {
             log.info("{} {} - {}", httpMethod, path, method.getName());
         } else {
@@ -48,8 +37,7 @@ public class LoggingAspect {
                     joinPoint.getSignature().getDeclaringTypeName(),
                     joinPoint.getSignature().getName());
         }
-        
-        // Логируем параметры запроса (опционально, можно отключить для production)
+
         if (log.isDebugEnabled()) {
             Object[] args = joinPoint.getArgs();
             if (args != null && args.length > 0) {
@@ -63,13 +51,11 @@ public class LoggingAspect {
         long startTime = System.currentTimeMillis();
         
         try {
-            // Выполняем метод контроллера
-            Object result = joinPoint.proceed();
+                        Object result = joinPoint.proceed();
             
             long executionTime = System.currentTimeMillis() - startTime;
             
-            // Логируем успешное выполнение
-            if (httpMethod != null && path != null) {
+                        if (httpMethod != null && path != null) {
                 log.info("{} {} completed in {} ms", httpMethod, path, executionTime);
             } else {
                 log.info("{}.{}() completed in {} ms", 
@@ -83,8 +69,7 @@ public class LoggingAspect {
         } catch (Exception e) {
             long executionTime = System.currentTimeMillis() - startTime;
             
-            // Логируем ошибку
-            if (httpMethod != null && path != null) {
+                        if (httpMethod != null && path != null) {
                 log.error("{} {} failed after {} ms: {}", 
                         httpMethod, path, executionTime, e.getMessage());
             } else {
@@ -99,10 +84,7 @@ public class LoggingAspect {
         }
     }
 
-    /**
-     * Определяет HTTP метод из аннотаций Spring
-     */
-    private String getHttpMethod(Method method) {
+        private String getHttpMethod(Method method) {
         if (method.isAnnotationPresent(GetMapping.class)) {
             return "GET";
         } else if (method.isAnnotationPresent(PostMapping.class)) {
@@ -122,10 +104,7 @@ public class LoggingAspect {
         return null;
     }
 
-    /**
-     * Получает путь запроса из аннотаций Spring
-     */
-    private String getRequestPath(Method method) {
+        private String getRequestPath(Method method) {
         String basePath = getClassLevelPath(method.getDeclaringClass());
         String methodPath = "";
         
@@ -156,10 +135,7 @@ public class LoggingAspect {
         return null;
     }
 
-    /**
-     * Получает базовый путь из аннотации @RequestMapping на уровне класса
-     */
-    private String getClassLevelPath(Class<?> clazz) {
+        private String getClassLevelPath(Class<?> clazz) {
         if (clazz.isAnnotationPresent(RequestMapping.class)) {
             RequestMapping requestMapping = clazz.getAnnotation(RequestMapping.class);
             if (requestMapping.value().length > 0) {

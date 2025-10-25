@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 })
 @EnableJpaRepositories(basePackages = "ru.itmo.soa.movie.repository")
 @EnableTransactionManagement
-@Import(DataSourceConfig.class)
+@Import({DataSourceConfig.class, ModelMapperConfig.class})
 public class RootConfig {
 }
 

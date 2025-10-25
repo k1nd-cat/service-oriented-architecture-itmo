@@ -6,9 +6,6 @@ import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-/**
- * Application configuration loader
- */
 public class AppConfig {
     
     private static final Logger logger = Logger.getLogger(AppConfig.class.getName());
@@ -46,10 +43,7 @@ public class AppConfig {
         }
     }
     
-    /**
-     * Resolve property placeholders like ${server.host}
-     */
-    private static void resolveProperties() {
+        private static void resolveProperties() {
         Properties resolved = new Properties();
         
         for (String key : properties.stringPropertyNames()) {
@@ -61,10 +55,7 @@ public class AppConfig {
         properties.putAll(resolved);
     }
     
-    /**
-     * Resolve placeholders in a value string
-     */
-    private static String resolvePlaceholders(String value) {
+        private static String resolvePlaceholders(String value) {
         if (value == null) {
             return null;
         }
