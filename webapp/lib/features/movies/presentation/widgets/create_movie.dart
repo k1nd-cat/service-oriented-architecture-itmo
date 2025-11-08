@@ -127,6 +127,9 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     _operatorXController.addListener(() {
       _deleteSuperfluousCharacters(_operatorXController, 15);
     });
+    _directorXController.addListener(() {
+      _deleteSuperfluousCharacters(_directorXController, 15);
+    });
   }
 
   void _deleteSuperfluousCharacters(TextEditingController controller,
