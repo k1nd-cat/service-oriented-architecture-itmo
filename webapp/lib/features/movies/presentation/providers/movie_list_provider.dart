@@ -62,7 +62,7 @@ class MoviesListNotifier extends StateNotifier<MoviesListState> {
     if (state.isLoading || state.isLoadingMore) return;
 
     final filters = ref.read(moviesFilterProvider);
-    final page = loadMore ? state.currentPage + 1 : 1;
+    final nextPage = loadMore ? state.currentPage + 1 : 1;
 
     state = state.copyWith(
       isLoading: !loadMore,
@@ -72,7 +72,7 @@ class MoviesListNotifier extends StateNotifier<MoviesListState> {
 
     final result = await repository.getMoviesByFilters(
       filters,
-      page: page,
+      page: nextPage,
       size: 10,
     );
 
@@ -91,10 +91,10 @@ class MoviesListNotifier extends StateNotifier<MoviesListState> {
           movies: movies,
           isLoading: false,
           isLoadingMore: false,
-          currentPage: response.page,
+          currentPage: nextPage,
           totalPages: response.totalPages,
           totalElements: response.totalElements,
-          hasMore: response.page < response.totalPages,
+          hasMore: nextPage < response.totalPages,
         );
       },
     );
