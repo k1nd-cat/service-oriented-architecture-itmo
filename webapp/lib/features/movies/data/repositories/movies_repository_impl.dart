@@ -1,10 +1,10 @@
-import 'package:fpdart/src/either.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:webapp/core/entity/info_message.dart';
 import 'package:webapp/core/error/exceptions/app_exception.dart';
 import 'package:webapp/core/error/exceptions/server_exception.dart';
 import 'package:webapp/core/error/failures/failure.dart';
 import 'package:webapp/core/network/api_response.dart';
-import 'package:webapp/features/movies/data/data_source/movies_remote_data_source.dart';
+import 'package:webapp/features/movies/data/data_source/movies_data_source.dart';
 import 'package:webapp/features/movies/data/mappers/movie_mapper.dart';
 import 'package:webapp/features/movies/data/models/filters_request.dart';
 import 'package:webapp/features/movies/domain/repositories/movies_repository.dart';
@@ -13,7 +13,7 @@ import 'package:webapp/features/movies/domain/entities/movie_draft.dart';
 import 'package:webapp/features/movies/domain/entities/movie_enums.dart';
 
 class MoviesRepositoryImpl extends MoviesRepository {
-  final MovieRemoteDataSource moviesRemoteDataSource;
+  final MoviesDataSource moviesRemoteDataSource;
 
   MoviesRepositoryImpl(this.moviesRemoteDataSource);
 

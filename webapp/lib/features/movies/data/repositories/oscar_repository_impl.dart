@@ -2,7 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import 'package:webapp/core/error/exceptions/app_exception.dart';
 import 'package:webapp/core/error/exceptions/server_exception.dart';
 import 'package:webapp/core/error/failures/failure.dart';
-import 'package:webapp/features/movies/data/data_source/oscar_remote_data_source.dart';
+import 'package:webapp/features/movies/data/data_source/oscar_data_source.dart';
 import 'package:webapp/features/movies/data/mappers/humiliate_by_genre_mapper.dart';
 import 'package:webapp/features/movies/data/mappers/looser_mapper.dart';
 import 'package:webapp/features/movies/domain/repositories/oscar_repository.dart';
@@ -12,7 +12,7 @@ import 'package:webapp/features/movies/domain/entities/movie_enums.dart';
 import '../../domain/entities/humiliate_by_genre.dart';
 
 class OscarRepositoryImpl implements OscarRepository {
-  final OscarRemoteDataSource oscarRemoteDataSource;
+  final OscarDataSource oscarRemoteDataSource;
 
   const OscarRepositoryImpl(this.oscarRemoteDataSource);
 

@@ -35,4 +35,30 @@ class MovieDto {
   factory MovieDto.fromJson(Map<String, dynamic> json) => _$MovieDtoFromJson(json);
 
   Map<String, dynamic> toJson() => _$MovieDtoToJson(this);
+
+  MovieDto copyWith({
+    int? id,
+    String? name,
+    CoordinatesDto? coordinates,
+    DateTime? creationDate,
+    int? oscarsCount,
+    double? totalBoxOffice,
+    int? length,
+    PersonDto? director,
+    MovieGenre? genre,
+    PersonDto? operator,
+  }) {
+    return MovieDto(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      coordinates: coordinates ?? this.coordinates,
+      creationDate: creationDate ?? this.creationDate,
+      oscarsCount: oscarsCount ?? this.oscarsCount,
+      totalBoxOffice: totalBoxOffice ?? this.totalBoxOffice,
+      length: length ?? this.length,
+      director: director ?? this.director,
+      genre: genre ?? this.genre,
+      operator: operator ?? this.operator,
+    );
+  }
 }

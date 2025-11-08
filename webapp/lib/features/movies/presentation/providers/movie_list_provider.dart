@@ -1,96 +1,157 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:webapp/core/network/api_response.dart';
 
+import '../../../../shared/widgets/one_action_dialog.dart';
 import '../../data/models/filters_request.dart';
-import '../../data/repositories/providers.dart';
 import '../../domain/entities/movie.dart';
+import '../../domain/repositories/movies_repository.dart';
 
-part 'movie_list_provider.g.dart';
+class MoviesListState {
+  final List<Movie> movies;
+  final bool isLoading;
+  final bool isLoadingMore;
+  final String? errorMessage;
+  final int currentPage;
+  final int totalPages;
+  final int totalElements;
+  final bool hasMore;
 
-@riverpod
-class MoviesFilterState extends _$MoviesFilterState {
-  @override
-  MoviesFilter build() {
-    return const MoviesFilter(
-      sort: null,
-      name: null,
-      genre: null,
-      oscarsCount: null,
-      totalBoxOffice: null,
-      length: null,
-      coordinates: null,
-      operator: null,
+  MoviesListState({
+    this.movies = const [],
+    this.isLoading = false,
+    this.isLoadingMore = false,
+    this.errorMessage,
+    this.currentPage = 1,
+    this.totalPages = 0,
+    this.totalElements = 0,
+    this.hasMore = false,
+  });
+
+  MoviesListState copyWith({
+    List<Movie>? movies,
+    bool? isLoading,
+    bool? isLoadingMore,
+    String? errorMessage,
+    int? currentPage,
+    int? totalPages,
+    int? totalElements,
+    bool? hasMore,
+  }) {
+    return MoviesListState(
+      movies: movies ?? this.movies,
+      isLoading: isLoading ?? this.isLoading,
+      isLoadingMore: isLoadingMore ?? this.isLoadingMore,
+      errorMessage: errorMessage,
+      currentPage: currentPage ?? this.currentPage,
+      totalPages: totalPages ?? this.totalPages,
+      totalElements: totalElements ?? this.totalElements,
+      hasMore: hasMore ?? this.hasMore,
+    );
+  }
+}
+
+class MoviesListNotifier extends StateNotifier<MoviesListState> {
+  final MoviesRepository repository;
+  final Ref ref;
+
+  MoviesListNotifier(this.repository, this.ref) : super(MoviesListState());
+
+  Future<void> loadMovies({bool loadMore = false}) async {
+    if (state.isLoading || state.isLoadingMore) return;
+
+    final filters = ref.read(moviesFilterProvider);
+    final page = loadMore ? state.currentPage + 1 : 1;
+
+    state = state.copyWith(
+      isLoading: !loadMore,
+      isLoadingMore: loadMore,
+      errorMessage: null,
+    );
+
+    final result = await repository.getMoviesByFilters(
+      filters,
+      page: page,
+      size: 10,
+    );
+
+    state = result.fold(
+      (failure) => state.copyWith(
+        isLoading: false,
+        isLoadingMore: false,
+        errorMessage: failure.message,
+      ),
+      (response) {
+        final movies = loadMore
+            ? [...state.movies, ...response.content]
+            : response.content;
+
+        return state.copyWith(
+          movies: movies,
+          isLoading: false,
+          isLoadingMore: false,
+          currentPage: page,
+          totalPages: response.totalPages,
+          totalElements: response.totalElements,
+          hasMore: page < response.totalPages,
+        );
+      },
     );
   }
 
-  void updateFilter(MoviesFilter newFilter) {
-    state = newFilter;
+  Future<void> deleteMovie(int id, BuildContext context) async {
+    final result = await repository.deleteMovieById(id);
+
+    result.fold(
+      (failure) {
+        showOneActionDialog(
+          context,
+          message: 'Ошибка при удалении фильма: ${failure.message}',
+          buttonText: 'OK',
+          action: () {},
+        );
+      },
+      (_) {
+        state = state.copyWith(
+          movies: state.movies.where((m) => m.id != id).toList(),
+          totalElements: state.totalElements - 1,
+        );
+
+        showOneActionDialog(
+          context,
+          message: 'Фильм успешно удален',
+          buttonText: 'OK',
+          action: () {},
+        );
+      },
+    );
+  }
+
+  void refresh() {
+    state = MoviesListState();
+    loadMovies();
   }
 }
 
-@riverpod
-Future<PaginatedResponse<Movie>> moviesList(
-    Ref ref, {
-      int size = 10,
-    }) {
-  final filter = ref.watch(moviesFilterStateProvider);
-  final page = ref.watch(currentPageProvider);
-  final moviesRepo = ref.watch(moviesRepositoryProvider);
-
-  return moviesRepo
-      .getMoviesByFilters(filter, page: page, size: size)
-      .then((either) => either.fold(
-        (failure) => throw failure,
-        (response) => response,
-  ));
-}
-
-@riverpod
-class CurrentPage extends _$CurrentPage {
-  static const int pageSize = 10;
-
-  int _totalPages = 1;
-
-  @override
-  int build() {
-    ref.listen(moviesListProvider(size: pageSize), (prev, next) {
-      next.whenData((response) {
-        final totalItems = response.totalElements;
-        _totalPages = (totalItems / pageSize).ceil();
-
-        if (state > _totalPages) {
-          state = _totalPages;
-        }
-      });
+final moviesListProvider =
+    StateNotifierProvider<MoviesListNotifier, MoviesListState>((ref) {
+      final repository = ref.watch(moviesRepositoryProvider);
+      return MoviesListNotifier(repository, ref);
     });
 
-    return 1;
-  }
-
-  void _reloadMoviesList() {
-    ref.invalidate(moviesListProvider(size: pageSize));
-  }
-
-  void goToPage(int page) {
-    if (page >= 1 && page <= _totalPages) {
-      state = page;
-      _reloadMoviesList();
-    }
-  }
-
-  void nextPage() {
-    if (state < _totalPages) {
-      state = state + 1;
-      _reloadMoviesList();
-    }
-  }
-
-  void previousPage() {
-    if (state > 1) {
-      state = state - 1;
-      _reloadMoviesList();
-    }
-  }
-
-  int get totalPages => _totalPages;
-}
+final moviesFilterProvider = StateProvider<MoviesFilter>((ref) {
+  return const MoviesFilter(
+    sort: null,
+    name: null,
+    genre: null,
+    oscarsCount: IntFilter(min: null, max: null),
+    totalBoxOffice: DoubleFilter(min: null, max: null),
+    length: IntFilter(min: null, max: null),
+    coordinates: CoordinatesFilter(
+      x: IntFilter(min: null, max: null),
+      y: DoubleFilter(min: null, max: null),
+    ),
+    operator: PersonFilter(name: null, nationality: null),
+  );
+});

@@ -1,10 +1,10 @@
 class ApiEndpoints {
   ApiEndpoints._();
 
-  static const String moviesFilters = '/movies/filters';
-  static const String movies = '/movies';
+  static const String baseUrl = 'https://158.160.85.230:8443';
+
+  static String moviesFilters = '/movies/filters';
   static const String createMovie = '/movies';
-  static String movieById(String id) => '/movies/$id';
   static String updateMovieById(String id) => '/movies/$id';
   static String getMovieById(String id) => '/movies/$id';
   static String deleteMovieById(String id) => '/movies/$id';

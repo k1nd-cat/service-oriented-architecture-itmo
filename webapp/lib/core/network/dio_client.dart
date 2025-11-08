@@ -5,10 +5,10 @@ class DioClient {
 
   Dio get dio => _dio;
 
-  DioClient(String baseUrl) {
+  DioClient() {
     _dio = Dio(
       BaseOptions(
-        baseUrl: baseUrl,
+        baseUrl: 'https://158.160.85.230:8443',
         connectTimeout: const Duration(seconds: 30),
         receiveTimeout: const Duration(seconds: 30),
         sendTimeout: const Duration(seconds: 30),
@@ -24,12 +24,4 @@ class DioClient {
 
     _dio.interceptors.addAll([]);
   }
-}
-
-class MovieServiceClient extends DioClient {
-  MovieServiceClient() : super('http://localhost:9001/service1/api/v1');
-}
-
-class OscarServiceClient extends DioClient {
-  OscarServiceClient() : super('http://localhost:9001/service2');
 }
