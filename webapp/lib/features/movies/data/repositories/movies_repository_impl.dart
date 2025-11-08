@@ -103,23 +103,23 @@ class MoviesRepositoryImpl extends MoviesRepository {
     }
   }
 
-  @override
-  Future<Either<Failure, List<Movie>>> getMovieListByName(String name) async {
-    try {
-      final movieDtoList = await moviesRemoteDataSource.getMovieListByName(
-        name,
-      );
-      return Right(MovieMapper.toEntityList(movieDtoList));
-    } on ServerException catch (e) {
-      return Left(Failure(code: e.code, message: e.message));
-    } on AppException catch (e) {
-      return Left(Failure(message: e.message));
-    } catch (e) {
-      return Left(
-        Failure(message: 'Произошла странная ошибка. Повторите попытку позже'),
-      );
-    }
-  }
+  // @override
+  // Future<Either<Failure, List<Movie>>> getMovieListByName(String name) async {
+  //   try {
+  //     final movieDtoList = await moviesRemoteDataSource.getMovieListByName(
+  //       name,
+  //     );
+  //     return Right(MovieMapper.toEntityList(movieDtoList));
+  //   } on ServerException catch (e) {
+  //     return Left(Failure(code: e.code, message: e.message));
+  //   } on AppException catch (e) {
+  //     return Left(Failure(message: e.message));
+  //   } catch (e) {
+  //     return Left(
+  //       Failure(message: 'Произошла странная ошибка. Повторите попытку позже'),
+  //     );
+  //   }
+  // }
 
   @override
   Future<Either<Failure, PaginatedResponse<Movie>>> getMoviesByFilters(

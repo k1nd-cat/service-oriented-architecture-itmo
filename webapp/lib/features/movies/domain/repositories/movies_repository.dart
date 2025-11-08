@@ -31,10 +31,11 @@ abstract class MoviesRepository {
 
   Future<Either<Failure, int>> calculateMoviesCountByGenre(MovieGenre genre);
 
-  Future<Either<Failure, List<Movie>>> getMovieListByName(String name);
+  // Future<Either<Failure, List<Movie>>> getMovieListByName(String name);
 }
 
 @riverpod
 MoviesRepository moviesRepository(Ref ref) {
   return MoviesRepositoryImpl(ref.watch(moviesDataSourceProvider));
 }
+

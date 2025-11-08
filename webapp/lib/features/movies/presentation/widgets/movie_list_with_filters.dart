@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../domain/entities/movie.dart';
 import '../providers/movie_list_provider.dart';
+import '../screens/additional_features_screen.dart';
+import '../screens/create_movie_screen.dart';
 import 'filters_dialog.dart';
 import 'movie_bubble.dart';
 
@@ -51,6 +53,16 @@ class _MoviesListScreenState extends ConsumerState<MoviesListScreen> {
         title: const Text('Фильмы'),
         actions: [
           IconButton(
+            icon: const Icon(Icons.star_border),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const AdditionalFeaturesScreen(),
+              ),
+            ),
+            tooltip: 'Дополнительные возможности',
+          ),
+          IconButton(
             icon: const Icon(Icons.filter_list),
             onPressed: () => _showFiltersDialog(context),
           ),
@@ -61,6 +73,22 @@ class _MoviesListScreenState extends ConsumerState<MoviesListScreen> {
         ],
       ),
       body: _buildBody(state),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          final result = await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const CreateMovieScreen(movie: null),
+            ),
+          );
+          if (result == true) {
+            ref.read(moviesListProvider.notifier).refresh();
+          }
+        },
+        icon: const Icon(Icons.add),
+        label: const Text('Создать фильм'),
+        tooltip: 'Создать новый фильм',
+      ),
     );
   }
 
