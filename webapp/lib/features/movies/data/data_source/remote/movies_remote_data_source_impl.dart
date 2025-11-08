@@ -19,7 +19,9 @@ class MoviesRemoteDataSourceImpl extends BaseRemoteDataSource
     return safeApiCall(() async {
       final response = await dio.post(
         ApiEndpoints.calculateMoviesCountByGenre,
-        data: {'genre': genre.toJson},
+        data: {
+          'genre': genre.toJson(),
+        }
       );
 
       return handleResponse<Map<String, dynamic>>(
