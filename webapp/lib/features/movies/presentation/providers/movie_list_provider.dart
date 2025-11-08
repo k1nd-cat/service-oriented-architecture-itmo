@@ -77,12 +77,12 @@ class MoviesListNotifier extends StateNotifier<MoviesListState> {
     );
 
     state = result.fold(
-      (failure) => state.copyWith(
+          (failure) => state.copyWith(
         isLoading: false,
         isLoadingMore: false,
         errorMessage: failure.message,
       ),
-      (response) {
+          (response) {
         final movies = loadMore
             ? [...state.movies, ...response.content]
             : response.content;
@@ -91,10 +91,10 @@ class MoviesListNotifier extends StateNotifier<MoviesListState> {
           movies: movies,
           isLoading: false,
           isLoadingMore: false,
-          currentPage: page,
+          currentPage: response.page,
           totalPages: response.totalPages,
           totalElements: response.totalElements,
-          hasMore: page < response.totalPages,
+          hasMore: response.page < response.totalPages,
         );
       },
     );
