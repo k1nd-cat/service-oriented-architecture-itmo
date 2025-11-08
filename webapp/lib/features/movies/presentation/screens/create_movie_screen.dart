@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../domain/entities/movie.dart';
 import '../widgets/create_movie.dart';
 
@@ -11,8 +10,12 @@ class CreateMovieScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar(title: Text(movie == null ? 'Создать фильм' : 'Обновить фильм')),
-      body: Center(child: CreateMovie(movie: movie)),
+      appBar: AppBar(
+        centerTitle: true,
+        elevation: 0,
+        title: Text(movie == null ? '🎬 Новый фильм' : '✏️ Редактирование'),
+      ),
+      body: CreateMovie(movie: movie),
     );
   }
 }

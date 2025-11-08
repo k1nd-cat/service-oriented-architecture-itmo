@@ -25,6 +25,7 @@ class CreateMovie extends ConsumerStatefulWidget {
 class _CreateMovieState extends ConsumerState<CreateMovie> {
   bool _isFormValid = false;
 
+  // Movie controllers
   final _movieNameController = TextEditingController();
   final _oscarCountController = TextEditingController();
   final _coordinateXController = TextEditingController();
@@ -33,16 +34,18 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
   final _lengthController = TextEditingController();
   MovieGenre _selectedGenre = MovieGenre.comedy;
 
+  // Operator controllers
   bool isOperator = false;
   final _operatorNameController = TextEditingController();
   final _operatorPassportIDController = TextEditingController();
   EyeColor? _selectedOperatorEyeColor;
-  var _selectedOperstorHairColor = HairColor.black;
+  var _selectedOperatorHairColor = HairColor.black;
   Country? _selectedOperatorNationality;
   final _operatorXController = TextEditingController();
   final _operatorYController = TextEditingController();
   final _operatorZController = TextEditingController();
 
+  // Director controllers
   final _directorNameController = TextEditingController();
   final _directorPassportIDController = TextEditingController();
   EyeColor? _selectedDirectorEyeColor;
@@ -83,7 +86,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
         _operatorNameController.text = movie.operator!.name;
         _operatorPassportIDController.text = movie.operator!.passportID;
         _selectedOperatorEyeColor = movie.operator!.eyeColor;
-        _selectedOperstorHairColor = movie.operator!.hairColor;
+        _selectedOperatorHairColor = movie.operator!.hairColor;
         _selectedOperatorNationality = movie.operator!.nationality;
         _operatorXController.text = movie.operator!.location.x.toString();
         _operatorYController.text = movie.operator!.location.y.toString();
@@ -123,6 +126,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     await notifier.createOrUpdate(draft!, movieId: widget.movie?.id);
 
     final state = ref.read(createMovieProvider);
+    if (!mounted) return;
+
     if (state.errorMessage != null) {
       await showOneActionDialog(
         context,
@@ -133,10 +138,12 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     } else {
       await showOneActionDialog(
         context,
-        message: 'Фильм успешно сохранён!',
+        message: widget.movie == null
+            ? 'Фильм успешно создан!'
+            : 'Фильм успешно обновлен!',
         buttonText: 'Ок',
         action: () {
-          Navigator.of(context).pop();
+          Navigator.of(context).pop(true);
         },
       );
     }
@@ -148,383 +155,734 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     });
   }
 
-  Widget createPerson(bool director) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
+  Widget _buildSectionTitle(String title, IconData icon) {
+    return Row(
       children: [
-        Wrap(
-          spacing: 20,
-          runSpacing: 10,
-          children: [
-            ValidationTestField(
-              width: 400,
-              textEditingController: director
-                  ? _directorNameController
-                  : _operatorNameController,
-              label: "Имя",
-              validations: [
-                ValidationConditions(
-                  name: "Не может быть пустым",
-                  condition: (text) => text.isNotEmpty,
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
-            ValidationTestField(
-              width: 400,
-              textEditingController: director
-                  ? _directorPassportIDController
-                  : _operatorPassportIDController,
-              label: "ID паспорта",
-              validations: [
-                ValidationConditions(
-                  name: "Минимальная длина: 8",
-                  condition: (text) => text.isNotEmpty && text.length >= 8,
-                ),
-              ],
-            ),
-          ],
-        ),
-        const SizedBox(height: 15),
-        Wrap(
-          spacing: 20,
-          runSpacing: 10,
-          children: [
-            ValidationDropdownField<EyeColor>(
-              width: 250,
-              selectedValue: director
-                  ? _selectedDirectorEyeColor
-                  : _selectedOperatorEyeColor,
-              enumValues: EyeColor.values,
-              label: 'Цвет глаз',
-              allowNull: true,
-              itemNameBuilder: (eyeColor) => eyeColor.uiString,
-              onChanged: (EyeColor? g) {
-                setState(() {
-                  if (!director) {
-                    _selectedOperatorEyeColor = g;
-                  } else {
-                    _selectedDirectorEyeColor = g;
-                  }
-                });
-              },
-            ),
-            ValidationDropdownField<HairColor>(
-              width: 250,
-              selectedValue: director
-                  ? _selectedDirectorHairColor
-                  : _selectedOperstorHairColor,
-              enumValues: HairColor.values,
-              label: 'Цвет глаз',
-              allowNull: false,
-              itemNameBuilder: (hairColor) => hairColor.uiString,
-              onChanged: (HairColor? g) {
-                setState(() {
-                  if (!director) {
-                    _selectedOperstorHairColor = g!;
-                  } else {
-                    _selectedDirectorHairColor = g!;
-                  }
-                });
-              },
-            ),
-            ValidationDropdownField<Country>(
-              width: 250,
-              selectedValue: director
-                  ? _selectedDirectorNationality
-                  : _selectedOperatorNationality,
-              enumValues: Country.values,
-              label: 'Национальность',
-              allowNull: true,
-              itemNameBuilder: (nationality) => nationality.uiString,
-              onChanged: (Country? g) {
-                setState(() {
-                  if (!director) {
-                    _selectedOperatorNationality = g;
-                  } else {
-                    _selectedDirectorNationality = g;
-                  }
-                });
-              },
-            ),
-          ],
-        ),
-        const SizedBox(height: 20),
-        const Text("Местоположение", style: TextStyle(fontSize: 20)),
-        const SizedBox(height: 10),
-        Wrap(
-          spacing: 20,
-          runSpacing: 10,
-          children: [
-            ValidationTestField(
-              textEditingController: director
-                  ? _directorXController
-                  : _operatorXController,
-              label: "X",
-              maxLength: 24,
-              validations: [
-                ValidationConditions(
-                  name: "Вещественное число",
-                  condition: (text) =>
-                      double.tryParse(text) != null ? true : false,
-                ),
-              ],
-            ),
-            ValidationTestField(
-              textEditingController: director
-                  ? _directorYController
-                  : _operatorYController,
-              label: "Y",
-              maxLength: 15,
-              validations: [
-                ValidationConditions(
-                  name: "Целое число",
-                  condition: (text) =>
-                      int.tryParse(text) != null ? true : false,
-                ),
-              ],
-            ),
-            ValidationTestField(
-              textEditingController: director
-                  ? _directorZController
-                  : _operatorZController,
-              label: "Z",
-              maxLength: 9,
-              validations: [
-                ValidationConditions(
-                  name: "Целое число",
-                  condition: (text) =>
-                      int.tryParse(text) != null ? true : false,
-                ),
-              ],
-            ),
-          ],
+        Icon(icon, color: Theme.of(context).colorScheme.primary),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
         ),
       ],
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final state = ref.watch(createMovieProvider);
+  Widget _buildPersonCard(bool isDirector) {
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
 
-    return SingleChildScrollView(
-      reverse: false,
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+        ),
+      ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20),
+        padding: const EdgeInsets.all(20),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 10),
+            _buildSectionTitle(
+              isDirector ? 'Режиссёр' : 'Оператор',
+              isDirector ? Icons.movie_creation : Icons.videocam,
+            ),
+            const SizedBox(height: 20),
+
+            // Основная информация
+            if (isSmallScreen)
+              Column(
+                children: [
+                  ValidationTestField(
+                    width: double.infinity,
+                    textEditingController: isDirector
+                        ? _directorNameController
+                        : _operatorNameController,
+                    label: "Имя",
+                    validations: [
+                      ValidationConditions(
+                        name: "Не может быть пустым",
+                        condition: (text) => text.isNotEmpty,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  ValidationTestField(
+                    width: double.infinity,
+                    textEditingController: isDirector
+                        ? _directorPassportIDController
+                        : _operatorPassportIDController,
+                    label: "ID паспорта",
+                    validations: [
+                      ValidationConditions(
+                        name: "Минимальная длина: 8",
+                        condition: (text) => text.isNotEmpty && text.length >= 8,
+                      ),
+                    ],
+                  ),
+                ],
+              )
+            else
+              Row(
+                children: [
+                  Expanded(
+                    child: ValidationTestField(
+                      textEditingController: isDirector
+                          ? _directorNameController
+                          : _operatorNameController,
+                      label: "Имя",
+                      validations: [
+                        ValidationConditions(
+                          name: "Не может быть пустым",
+                          condition: (text) => text.isNotEmpty,
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: ValidationTestField(
+                      textEditingController: isDirector
+                          ? _directorPassportIDController
+                          : _operatorPassportIDController,
+                      label: "ID паспорта",
+                      validations: [
+                        ValidationConditions(
+                          name: "Минимальная длина: 8",
+                          condition: (text) => text.isNotEmpty && text.length >= 8,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+            const SizedBox(height: 20),
+
+            // Внешность
             Text(
-              widget.movie == null ? 'Создать фильм' : 'Обновить фильм',
-              style: TextStyle(fontSize: 40),
+              'Внешность',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
-            const SizedBox(height: 10),
-            ValidationTestField(
-              width: 400,
-              textEditingController: _movieNameController,
-              label: "Название фильма",
-              validations: [
-                ValidationConditions(
-                  name: "Не может быть пустым",
-                  condition: (text) => text.isNotEmpty,
-                ),
-              ],
-            ),
-            const SizedBox(height: 15),
+            const SizedBox(height: 12),
+
             Wrap(
-              spacing: 20,
-              runSpacing: 10,
+              spacing: 16,
+              runSpacing: 16,
               children: [
-                ValidationTestField(
-                  width: 210,
-                  maxLength: 9,
-                  textEditingController: _oscarCountController,
-                  label: "Количество оскаров",
-                  validations: [
-                    ValidationConditions(
-                      name: "Целое число",
-                      condition: (text) => int.tryParse(text) != null,
-                    ),
-                    ValidationConditions(
-                      name: "Больше нуля",
-                      condition: (text) {
-                        var oscarCount = int.tryParse(text);
-                        if (oscarCount == null || oscarCount <= 0) return false;
-                        return true;
-                      },
-                    ),
-                  ],
-                ),
-                ValidationTestField(
-                  maxLength: 15,
-                  width: 210,
-                  textEditingController: _totalBoxOfficeController,
-                  label: "Кассовые сборы",
-                  validations: [
-                    ValidationConditions(
-                      name: "Вещественное число",
-                      condition: (text) =>
-                          text.isEmpty || double.tryParse(text) != null,
-                    ),
-                    ValidationConditions(
-                      name: "Больше нуля",
-                      condition: (text) {
-                        if (text.isEmpty) return true;
-                        var oscarCount = double.tryParse(text);
-                        if (oscarCount == null || oscarCount <= 0) return false;
-                        return true;
-                      },
-                    ),
-                  ],
-                ),
-                ValidationTestField(
-                  width: 210,
-                  maxLength: 9,
-                  textEditingController: _lengthController,
-                  label: "Длина фильма",
-                  validations: [
-                    ValidationConditions(
-                      name: "Целое число",
-                      condition: (text) => int.tryParse(text) != null,
-                    ),
-                    ValidationConditions(
-                      name: "Больше нуля",
-                      condition: (text) {
-                        var oscarCount = int.tryParse(text);
-                        if (oscarCount == null || oscarCount <= 0) return false;
-                        return true;
-                      },
-                    ),
-                  ],
-                ),
-                ValidationDropdownField<MovieGenre>(
-                  width: 210,
-                  selectedValue: _selectedGenre,
-                  enumValues: MovieGenre.values,
-                  label: 'Жанр',
-                  allowNull: false,
-                  itemNameBuilder: (genre) => genre.uiString,
-                  onChanged: (MovieGenre? g) {
+                ValidationDropdownField<EyeColor>(
+                  width: isSmallScreen ? double.infinity : 200,
+                  selectedValue: isDirector
+                      ? _selectedDirectorEyeColor
+                      : _selectedOperatorEyeColor,
+                  enumValues: EyeColor.values,
+                  label: 'Цвет глаз',
+                  allowNull: true,
+                  itemNameBuilder: (eyeColor) => eyeColor.uiString,
+                  onChanged: (EyeColor? g) {
                     setState(() {
-                      _selectedGenre = g!;
+                      if (!isDirector) {
+                        _selectedOperatorEyeColor = g;
+                      } else {
+                        _selectedDirectorEyeColor = g;
+                      }
+                    });
+                  },
+                ),
+                ValidationDropdownField<HairColor>(
+                  width: isSmallScreen ? double.infinity : 200,
+                  selectedValue: isDirector
+                      ? _selectedDirectorHairColor
+                      : _selectedOperatorHairColor,
+                  enumValues: HairColor.values,
+                  label: 'Цвет волос', // Исправлено!
+                  allowNull: false,
+                  itemNameBuilder: (hairColor) => hairColor.uiString,
+                  onChanged: (HairColor? g) {
+                    setState(() {
+                      if (!isDirector) {
+                        _selectedOperatorHairColor = g!;
+                      } else {
+                        _selectedDirectorHairColor = g!;
+                      }
+                    });
+                  },
+                ),
+                ValidationDropdownField<Country>(
+                  width: isSmallScreen ? double.infinity : 200,
+                  selectedValue: isDirector
+                      ? _selectedDirectorNationality
+                      : _selectedOperatorNationality,
+                  enumValues: Country.values,
+                  label: 'Национальность',
+                  allowNull: true,
+                  itemNameBuilder: (nationality) => nationality.uiString,
+                  onChanged: (Country? g) {
+                    setState(() {
+                      if (!isDirector) {
+                        _selectedOperatorNationality = g;
+                      } else {
+                        _selectedDirectorNationality = g;
+                      }
                     });
                   },
                 ),
               ],
             ),
+
             const SizedBox(height: 20),
-            const Text("Координаты", style: TextStyle(fontSize: 20)),
-            const SizedBox(height: 10),
+
+            // Местоположение
+            Text(
+              'Местоположение',
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+
             Wrap(
-              spacing: 20,
-              runSpacing: 10,
+              spacing: 16,
+              runSpacing: 16,
               children: [
                 ValidationTestField(
-                  textEditingController: _coordinateXController,
+                  width: isSmallScreen ? double.infinity : 150,
+                  textEditingController: isDirector
+                      ? _directorXController
+                      : _operatorXController,
                   label: "X",
-                  maxLength: 9,
+                  maxLength: 24,
                   validations: [
                     ValidationConditions(
-                      name: "Целое число",
+                      name: "Вещественное число",
                       condition: (text) =>
-                          int.tryParse(text) != null ? true : false,
-                    ),
-                    ValidationConditions(
-                      name: "Больше -651",
-                      condition: (text) {
-                        final x = int.tryParse(text);
-                        if (x == null) return false;
-                        if (x <= -651) return false;
-                        return true;
-                      },
+                      double.tryParse(text) != null,
                     ),
                   ],
                 ),
                 ValidationTestField(
-                  textEditingController: _coordinateYController,
+                  width: isSmallScreen ? double.infinity : 150,
+                  textEditingController: isDirector
+                      ? _directorYController
+                      : _operatorYController,
                   label: "Y",
                   maxLength: 15,
                   validations: [
                     ValidationConditions(
                       name: "Целое число",
                       condition: (text) =>
-                          int.tryParse(text) != null ? true : false,
+                      int.tryParse(text) != null,
                     ),
+                  ],
+                ),
+                ValidationTestField(
+                  width: isSmallScreen ? double.infinity : 150,
+                  textEditingController: isDirector
+                      ? _directorZController
+                      : _operatorZController,
+                  label: "Z",
+                  maxLength: 9,
+                  validations: [
                     ValidationConditions(
-                      name: "Не меньше -612",
-                      condition: (text) {
-                        final y = int.tryParse(text);
-                        if (y == null) return false;
-                        if (y <= -612) return false;
-                        return true;
-                      },
+                      name: "Целое число",
+                      condition: (text) =>
+                      int.tryParse(text) != null,
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 20),
-            const Text("Оператор", style: TextStyle(fontSize: 30)),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                Checkbox(
-                  value: isOperator,
-                  onChanged: (value) => setState(() {
-                    isOperator = value!;
-                    _isFormValid = validateAndCreateDraft() != null;
-                  }),
+          ],
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = ref.watch(createMovieProvider);
+    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+
+    return Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 1000),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Заголовок
+              Card(
+                elevation: 4,
+                color: Theme.of(context).colorScheme.primaryContainer,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                Text('Добавить оператора'),
-              ],
-            ),
-            if (isOperator)
-              Column(
-                children: [const SizedBox(height: 10), createPerson(false)],
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.movie == null ? Icons.add_circle : Icons.edit,
+                        size: 40,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.movie == null ? 'Создание фильма' : 'Редактирование фильма',
+                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                                fontWeight: FontWeight.bold,
+                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              widget.movie == null
+                                  ? 'Заполните все поля для создания нового фильма'
+                                  : 'Измените необходимые поля',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
 
-            const SizedBox(height: 20),
-            const Text("Режиссёр", style: TextStyle(fontSize: 30)),
-            const SizedBox(height: 10),
-            createPerson(true),
+              const SizedBox(height: 24),
 
-            const SizedBox(height: 15),
-            Wrap(
-              spacing: 20,
-              runSpacing: 10,
-              children: [
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(400, 65),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+              // Основная информация о фильме
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: Text('Вернуться назад'),
                 ),
-                ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(400, 65),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(15),
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildSectionTitle('Основная информация', Icons.movie),
+                      const SizedBox(height: 20),
+
+                      ValidationTestField(
+                        width: double.infinity,
+                        textEditingController: _movieNameController,
+                        label: "Название фильма",
+                        validations: [
+                          ValidationConditions(
+                            name: "Не может быть пустым",
+                            condition: (text) => text.isNotEmpty,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+
+                      if (isSmallScreen)
+                        Column(
+                          children: [
+                            ValidationTestField(
+                              width: double.infinity,
+                              maxLength: 9,
+                              textEditingController: _oscarCountController,
+                              label: "Количество оскаров",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Целое число",
+                                  condition: (text) => int.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    var oscarCount = int.tryParse(text);
+                                    return oscarCount != null && oscarCount > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ValidationTestField(
+                              width: double.infinity,
+                              maxLength: 15,
+                              textEditingController: _totalBoxOfficeController,
+                              label: "Кассовые сборы",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Число",
+                                  condition: (text) =>
+                                  text.isEmpty || double.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    if (text.isEmpty) return true;
+                                    var value = double.tryParse(text);
+                                    return value != null && value > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ValidationTestField(
+                              width: double.infinity,
+                              maxLength: 9,
+                              textEditingController: _lengthController,
+                              label: "Длина фильма (минуты)",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Целое число",
+                                  condition: (text) => int.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    var length = int.tryParse(text);
+                                    return length != null && length > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            ValidationDropdownField<MovieGenre>(
+                              width: double.infinity,
+                              selectedValue: _selectedGenre,
+                              enumValues: MovieGenre.values,
+                              label: 'Жанр',
+                              allowNull: false,
+                              itemNameBuilder: (genre) => genre.uiString,
+                              onChanged: (MovieGenre? g) {
+                                setState(() {
+                                  _selectedGenre = g!;
+                                });
+                              },
+                            ),
+                          ],
+                        )
+                      else
+                        Wrap(
+                          spacing: 16,
+                          runSpacing: 16,
+                          children: [
+                            ValidationTestField(
+                              width: 220,
+                              maxLength: 9,
+                              textEditingController: _oscarCountController,
+                              label: "Количество оскаров",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Целое число",
+                                  condition: (text) => int.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    var oscarCount = int.tryParse(text);
+                                    return oscarCount != null && oscarCount > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            ValidationTestField(
+                              maxLength: 15,
+                              width: 220,
+                              textEditingController: _totalBoxOfficeController,
+                              label: "Кассовые сборы",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Число",
+                                  condition: (text) =>
+                                  text.isEmpty || double.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    if (text.isEmpty) return true;
+                                    var value = double.tryParse(text);
+                                    return value != null && value > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            ValidationTestField(
+                              width: 220,
+                              maxLength: 9,
+                              textEditingController: _lengthController,
+                              label: "Длина фильма (минуты)",
+                              validations: [
+                                ValidationConditions(
+                                  name: "Целое число",
+                                  condition: (text) => int.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше нуля",
+                                  condition: (text) {
+                                    var length = int.tryParse(text);
+                                    return length != null && length > 0;
+                                  },
+                                ),
+                              ],
+                            ),
+                            ValidationDropdownField<MovieGenre>(
+                              width: 220,
+                              selectedValue: _selectedGenre,
+                              enumValues: MovieGenre.values,
+                              label: 'Жанр',
+                              allowNull: false,
+                              itemNameBuilder: (genre) => genre.uiString,
+                              onChanged: (MovieGenre? g) {
+                                setState(() {
+                                  _selectedGenre = g!;
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+
+                      const SizedBox(height: 24),
+                      const Divider(),
+                      const SizedBox(height: 16),
+
+                      Text(
+                        'Координаты фильма',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ValidationTestField(
+                              textEditingController: _coordinateXController,
+                              label: "X",
+                              maxLength: 9,
+                              validations: [
+                                ValidationConditions(
+                                  name: "Целое число",
+                                  condition: (text) =>
+                                  int.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше -651",
+                                  condition: (text) {
+                                    final x = int.tryParse(text);
+                                    return x != null && x > -651;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ValidationTestField(
+                              textEditingController: _coordinateYController,
+                              label: "Y",
+                              maxLength: 15,
+                              validations: [
+                                ValidationConditions(
+                                  name: "Вещественное число",
+                                  condition: (text) =>
+                                  double.tryParse(text) != null,
+                                ),
+                                ValidationConditions(
+                                  name: "Больше -612",
+                                  condition: (text) {
+                                    final y = double.tryParse(text);
+                                    return y != null && y > -612;
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
-                  onPressed: state.isLoading
-                      ? null
-                      : (_isFormValid ? _onSavePressed : null),
-                  child: state.isLoading
-                      ? CircularProgressIndicator()
-                      : Text('Сохранить'),
                 ),
-              ],
-            ),
-            const SizedBox(height: 10),
-          ],
+              ),
+
+              const SizedBox(height: 24),
+
+              // Оператор
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: isOperator,
+                            onChanged: (value) => setState(() {
+                              isOperator = value!;
+                              _isFormValid = validateAndCreateDraft() != null;
+                            }),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Добавить оператора',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            '(необязательно)',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (isOperator) ...[
+                        const SizedBox(height: 20),
+                        _buildPersonCard(false),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 24),
+
+              // Режиссёр
+              _buildPersonCard(true),
+
+              const SizedBox(height: 32),
+
+              // Кнопки действий
+              if (isSmallScreen)
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: state.isLoading
+                          ? null
+                          : (_isFormValid ? _onSavePressed : null),
+                      icon: state.isLoading
+                          ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.onPrimary,
+                          ),
+                        ),
+                      )
+                          : Icon(widget.movie == null ? Icons.save : Icons.update),
+                      label: Text(
+                        state.isLoading
+                            ? 'Сохранение...'
+                            : (widget.movie == null ? 'Создать фильм' : 'Сохранить изменения'),
+                        style: const TextStyle(fontSize: 16),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.arrow_back),
+                      label: const Text(
+                        'Вернуться назад',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                    ),
+                  ],
+                )
+              else
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.arrow_back),
+                        label: const Text(
+                          'Вернуться назад',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: FilledButton.icon(
+                        style: FilledButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        onPressed: state.isLoading
+                            ? null
+                            : (_isFormValid ? _onSavePressed : null),
+                        icon: state.isLoading
+                            ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Theme.of(context).colorScheme.onPrimary,
+                            ),
+                          ),
+                        )
+                            : Icon(widget.movie == null ? Icons.save : Icons.update),
+                        label: Text(
+                          state.isLoading
+                              ? 'Сохранение...'
+                              : (widget.movie == null ? 'Создать фильм' : 'Сохранить изменения'),
+                          style: const TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+              const SizedBox(height: 20),
+            ],
+          ),
         ),
       ),
     );
@@ -554,8 +912,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
       if (totalBoxOffice == null || totalBoxOffice <= 0) return null;
     }
 
-    // Длина фильма
-    final length = int.tryParse(_oscarCountController.text);
+    // Длина фильма - ИСПРАВЛЕНО!
+    final length = int.tryParse(_lengthController.text);
     if (length == null || length <= 0) return null;
 
     final genre = _selectedGenre;
@@ -608,7 +966,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
         nameController: _operatorNameController,
         passportController: _operatorPassportIDController,
         eyeColor: _selectedOperatorEyeColor,
-        hairColor: _selectedOperstorHairColor,
+        hairColor: _selectedOperatorHairColor,
         nationality: _selectedOperatorNationality,
         xController: _operatorXController,
         yController: _operatorYController,
