@@ -49,4 +49,4 @@ final class OscarDataSourceProvider
   }
 }
 
-String _$oscarDataSourceHash() => r'5f5a31e561f23cacbad92aec41d8460638f7dd6a';
+String _$oscarDataSourceHash() => r'ae0f3c7daa546b2728dde758e866374b5d1245aa';

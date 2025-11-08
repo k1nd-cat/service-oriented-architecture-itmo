@@ -8,6 +8,7 @@ part 'movie_dto.g.dart';
 
 @JsonSerializable()
 class MovieDto {
+  @JsonKey(includeFromJson: true, includeToJson: false)
   final int? id;
   final String name;
   final CoordinatesDto coordinates;

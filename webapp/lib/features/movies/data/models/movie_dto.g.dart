@@ -26,7 +26,6 @@ MovieDto _$MovieDtoFromJson(Map<String, dynamic> json) => MovieDto(
 );
 
 Map<String, dynamic> _$MovieDtoToJson(MovieDto instance) => <String, dynamic>{
-  'id': instance.id,
   'name': instance.name,
   'coordinates': instance.coordinates,
   'creationDate': instance.creationDate?.toIso8601String(),

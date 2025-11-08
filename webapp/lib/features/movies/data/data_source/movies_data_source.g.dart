@@ -53,4 +53,4 @@ final class MoviesDataSourceProvider
   }
 }
 
-String _$moviesDataSourceHash() => r'00a6e7e6aa80757d8bc619a110cb29d9c321d935';
+String _$moviesDataSourceHash() => r'625092a69d69a97610355948f803852a89bc4a90';
