@@ -28,7 +28,6 @@ MovieDto _$MovieDtoFromJson(Map<String, dynamic> json) => MovieDto(
 Map<String, dynamic> _$MovieDtoToJson(MovieDto instance) => <String, dynamic>{
   'name': instance.name,
   'coordinates': instance.coordinates,
-  'creationDate': instance.creationDate?.toIso8601String(),
   'oscarsCount': instance.oscarsCount,
   'totalBoxOffice': instance.totalBoxOffice,
   'length': instance.length,

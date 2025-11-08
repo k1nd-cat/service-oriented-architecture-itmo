@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webapp/features/movies/domain/entities/person.dart';
 import 'package:webapp/features/movies/presentation/extensions/enums_ui_extensions.dart';
 import '../../domain/entities/movie.dart';
 
@@ -219,7 +220,7 @@ class MovieBubble extends StatelessWidget {
     ];
   }
 
-  List<_InfoItem> _getDirectorInfo(dynamic person) {
+  List<_InfoItem> _getDirectorInfo(Person person) {
     return [
       _InfoItem(Icons.person, 'Имя', person.name),
       _InfoItem(Icons.badge, 'Паспорт', person.passportID),
