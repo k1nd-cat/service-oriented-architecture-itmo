@@ -619,6 +619,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
 
     // Собрать объект
     return MovieDraft(
+      id: widget.movie?.id,
       name: name,
       coordinates: Coordinates(x: coordinateX, y: coordinateY),
       oscarsCount: oscarsCount,
