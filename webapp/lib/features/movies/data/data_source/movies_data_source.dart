@@ -35,6 +35,6 @@ abstract class MoviesDataSource {
 
 @riverpod
 MoviesDataSource moviesDataSource(Ref ref) {
-  return MoviesMockDataSourceImpl();
-  // return MoviesRemoteDataSourceImpl(ref.watch(dioProvider));
+  // return MoviesMockDataSourceImpl();
+  return MoviesRemoteDataSourceImpl(ref.watch(dioProvider));
 }
