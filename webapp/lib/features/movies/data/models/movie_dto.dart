@@ -12,6 +12,7 @@ class MovieDto {
   final int? id;
   final String name;
   final CoordinatesDto coordinates;
+  @JsonKey(includeFromJson: true, includeToJson: false)
   final DateTime? creationDate;
   final int? oscarsCount;
   final double? totalBoxOffice;
