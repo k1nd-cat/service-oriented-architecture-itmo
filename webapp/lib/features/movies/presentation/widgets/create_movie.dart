@@ -119,7 +119,13 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
       c.addListener(_updateFormValid);
     }
     _coordinateYController.addListener(() {
-      _deleteSuperfluousCharacters(_coordinateYController, 6);
+      _deleteSuperfluousCharacters(_coordinateYController, 4);
+    });
+    _totalBoxOfficeController.addListener(() {
+      _deleteSuperfluousCharacters(_totalBoxOfficeController, 15);
+    });
+    _operatorXController.addListener(() {
+      _deleteSuperfluousCharacters(_operatorXController, 15);
     });
   }
 
