@@ -11,7 +11,7 @@ class MovieDraft {
   final double? totalBoxOffice;
   final int length;
   final Person director;
-  final MovieGenre? genre;
+  final MovieGenre genre;
   final Person? operator;
 
   const MovieDraft({

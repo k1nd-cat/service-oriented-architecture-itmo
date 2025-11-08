@@ -68,9 +68,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
       _totalBoxOfficeController.text = movie.totalBoxOffice?.toString() ?? '';
       _lengthController.text = movie.length.toString();
 
-      _selectedGenre = movie.genre ?? MovieGenre.comedy;
+      _selectedGenre = movie.genre;
 
-      // Заполнение режиссёра
       _directorNameController.text = movie.director.name;
       _directorPassportIDController.text = movie.director.passportID;
       _selectedDirectorEyeColor = movie.director.eyeColor;
@@ -80,7 +79,6 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
       _directorYController.text = movie.director.location.y.toString();
       _directorZController.text = movie.director.location.z.toString();
 
-      // Заполнение оператора, если он есть
       if (movie.operator != null) {
         isOperator = true;
         _operatorNameController.text = movie.operator!.name;
@@ -193,7 +191,6 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
             ),
             const SizedBox(height: 20),
 
-            // Основная информация
             if (isSmallScreen)
               Column(
                 children: [
@@ -417,7 +414,6 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // Заголовок
               Card(
                 elevation: 4,
                 color: Theme.of(context).colorScheme.primaryContainer,
@@ -770,12 +766,10 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
 
               const SizedBox(height: 24),
 
-              // Режиссёр
               _buildPersonCard(true),
 
               const SizedBox(height: 32),
 
-              // Кнопки действий
               if (isSmallScreen)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -889,30 +883,24 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
   }
 
   MovieDraft? validateAndCreateDraft() {
-    // ======== Movie-level проверки ========
-    // Название фильма
     final name = _movieNameController.text;
     if (name.isEmpty) return null;
 
-    // Координаты фильма
     final coordinateX = int.tryParse(_coordinateXController.text);
     final coordinateY = double.tryParse(_coordinateYController.text);
     if (coordinateX == null || coordinateY == null) return null;
     if (coordinateX <= -651) return null;
     if (coordinateY <= -612) return null;
 
-    // Оскары
     final oscarsCount = int.tryParse(_oscarCountController.text);
     if (oscarsCount == null || oscarsCount <= 0) return null;
 
-    // Кассовые сборы
     double? totalBoxOffice;
     if (_totalBoxOfficeController.text.isNotEmpty) {
       totalBoxOffice = double.tryParse(_totalBoxOfficeController.text);
       if (totalBoxOffice == null || totalBoxOffice <= 0) return null;
     }
 
-    // Длина фильма - ИСПРАВЛЕНО!
     final length = int.tryParse(_lengthController.text);
     if (length == null || length <= 0) return null;
 
@@ -975,7 +963,6 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
       if (operatorPerson == null) return null;
     }
 
-    // Собрать объект
     return MovieDraft(
       id: widget.movie?.id,
       name: name,

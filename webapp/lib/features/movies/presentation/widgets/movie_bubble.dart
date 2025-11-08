@@ -33,7 +33,6 @@ class MovieBubble extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Заголовок с кнопками действий
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -52,16 +51,22 @@ class MovieBubble extends StatelessWidget {
                         Wrap(
                           spacing: 8,
                           children: [
-                            if (movie.genre != null)
-                              Chip(
-                                label: Text(movie.genre!.uiString),
-                                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                                labelStyle: TextStyle(
-                                  color: Theme.of(context).colorScheme.onPrimaryContainer,
-                                  fontSize: 12,
-                                ),
+                            Chip(
+                              label: Text(movie.genre.uiString),
+                              materialTapTargetSize: MaterialTapTargetSize
+                                  .shrinkWrap,
+                              backgroundColor: Theme
+                                  .of(context)
+                                  .colorScheme
+                                  .primaryContainer,
+                              labelStyle: TextStyle(
+                                color: Theme
+                                    .of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
+                                fontSize: 12,
                               ),
+                            ),
                             if (movie.oscarsCount != null && movie.oscarsCount! > 0)
                               Chip(
                                 avatar: const Icon(Icons.emoji_events, size: 16, color: Colors.amber),
@@ -101,9 +106,7 @@ class MovieBubble extends StatelessWidget {
               ),
               const SizedBox(height: 16),
 
-              // Основная информация
               if (isSmallScreen)
-              // Мобильная версия - вертикальный layout
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -117,7 +120,6 @@ class MovieBubble extends StatelessWidget {
                   ],
                 )
               else
-              // Десктопная версия - горизонтальный layout
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [

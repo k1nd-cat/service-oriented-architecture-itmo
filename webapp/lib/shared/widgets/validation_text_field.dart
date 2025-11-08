@@ -132,7 +132,7 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                 duration: const Duration(milliseconds: 200),
                 decoration: BoxDecoration(
                   color: _isHovered
-                      ? colorScheme.surfaceVariant.withOpacity(0.3)
+                      ? colorScheme.surfaceVariant.withValues(alpha: 0.3)
                       : colorScheme.surface,
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(
@@ -160,7 +160,6 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // TextField с улучшенным дизайном
                       TextField(
                         controller: _controller,
                         focusNode: _focusNode,

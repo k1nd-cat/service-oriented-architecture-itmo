@@ -5,7 +5,6 @@ import '../../../../core/network/network_providers.dart';
 import '../../domain/entities/movie_enums.dart';
 import '../models/humiliate_by_genre_response.dart';
 import '../models/looser_dto.dart';
-import 'mocks/oscar_mock_data_source_impl.dart';
 
 part 'oscar_data_source.g.dart';
 
@@ -17,6 +16,5 @@ abstract class OscarDataSource {
 
 @riverpod
 OscarDataSource oscarDataSource(Ref ref) {
-  // return OscarMockDataSourceImpl();
   return OscarRemoteDataSourceImpl(ref.watch(dioProvider));
 }

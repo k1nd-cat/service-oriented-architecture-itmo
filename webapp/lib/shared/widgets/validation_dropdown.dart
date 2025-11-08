@@ -21,11 +21,12 @@ class ValidationDropdownField<T> extends StatefulWidget {
     this.width,
     this.prefixIcon,
     this.helperText,
-    Key? key,
-  }) : super(key: key);
+    super.key,
+  });
 
   @override
-  State<ValidationDropdownField<T>> createState() => _ValidationDropdownFieldState<T>();
+  State<ValidationDropdownField<T>> createState() =>
+      _ValidationDropdownFieldState<T>();
 }
 
 class _ValidationDropdownFieldState<T> extends State<ValidationDropdownField<T>>
@@ -73,40 +74,46 @@ class _ValidationDropdownFieldState<T> extends State<ValidationDropdownField<T>>
 
     List<DropdownMenuItem<T?>> items = [];
     if (widget.allowNull) {
-      items.add(DropdownMenuItem<T?>(
-        value: null,
-        child: Text(
-          'Не выбрано',
-          style: TextStyle(
-            color: colorScheme.onSurfaceVariant,
-            fontStyle: FontStyle.italic,
+      items.add(
+        DropdownMenuItem<T?>(
+          value: null,
+          child: Text(
+            'Не выбрано',
+            style: TextStyle(
+              color: colorScheme.onSurfaceVariant,
+              fontStyle: FontStyle.italic,
+            ),
           ),
         ),
-      ));
+      );
     }
-    items.addAll(widget.enumValues.map((e) => DropdownMenuItem<T?>(
-      value: e,
-      child: Row(
-        children: [
-          Container(
-            width: 4,
-            height: 20,
-            margin: const EdgeInsets.only(right: 12),
-            decoration: BoxDecoration(
-              color: colorScheme.primary.withOpacity(0.6),
-              borderRadius: BorderRadius.circular(2),
-            ),
+    items.addAll(
+      widget.enumValues.map(
+        (e) => DropdownMenuItem<T?>(
+          value: e,
+          child: Row(
+            children: [
+              Container(
+                width: 4,
+                height: 20,
+                margin: const EdgeInsets.only(right: 12),
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withValues(alpha: 0.6),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Text(
+                widget.itemNameBuilder(e),
+                style: TextStyle(
+                  color: colorScheme.onSurface,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
           ),
-          Text(
-            widget.itemNameBuilder(e),
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-        ],
+        ),
       ),
-    )));
+    );
 
     return MouseRegion(
       onEnter: (_) => setState(() => _isHovered = true),
@@ -114,7 +121,7 @@ class _ValidationDropdownFieldState<T> extends State<ValidationDropdownField<T>>
       child: AnimatedBuilder(
         animation: _focusAnimation,
         builder: (context, child) {
-          return Container(
+          return SizedBox(
             width: widget.width,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),

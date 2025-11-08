@@ -6,7 +6,6 @@ import 'package:webapp/features/movies/data/models/movie_dto.dart';
 import 'package:webapp/features/movies/domain/entities/movie_enums.dart';
 
 import '../../../../core/network/network_providers.dart';
-import 'mocks/movies_mock_data_source_impl.dart';
 
 part 'movies_data_source.g.dart';
 
@@ -35,6 +34,5 @@ abstract class MoviesDataSource {
 
 @riverpod
 MoviesDataSource moviesDataSource(Ref ref) {
-  // return MoviesMockDataSourceImpl();
   return MoviesRemoteDataSourceImpl(ref.watch(dioProvider));
 }

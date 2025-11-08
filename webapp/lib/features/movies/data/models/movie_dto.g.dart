@@ -19,7 +19,7 @@ MovieDto _$MovieDtoFromJson(Map<String, dynamic> json) => MovieDto(
   totalBoxOffice: (json['totalBoxOffice'] as num?)?.toDouble(),
   length: (json['length'] as num).toInt(),
   director: PersonDto.fromJson(json['director'] as Map<String, dynamic>),
-  genre: $enumDecodeNullable(_$MovieGenreEnumMap, json['genre']),
+  genre: $enumDecode(_$MovieGenreEnumMap, json['genre']),
   operator: json['operator'] == null
       ? null
       : PersonDto.fromJson(json['operator'] as Map<String, dynamic>),
@@ -32,7 +32,7 @@ Map<String, dynamic> _$MovieDtoToJson(MovieDto instance) => <String, dynamic>{
   'totalBoxOffice': instance.totalBoxOffice,
   'length': instance.length,
   'director': instance.director,
-  'genre': _$MovieGenreEnumMap[instance.genre],
+  'genre': _$MovieGenreEnumMap[instance.genre]!,
   'operator': instance.operator,
 };
 

@@ -65,7 +65,7 @@ class MoviesRemoteDataSourceImpl extends BaseRemoteDataSource
   @override
   Future<void> deleteMovieById(int id) async {
     return safeApiCall(() async {
-      final response = await dio.delete(ApiEndpoints.deleteMovieById('$id'));
+      await dio.delete(ApiEndpoints.deleteMovieById('$id'));
     });
   }
 

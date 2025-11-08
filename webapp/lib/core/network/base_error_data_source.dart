@@ -21,7 +21,7 @@ abstract class BaseRemoteDataSource {
         fromJson,
       );
 
-    } catch (e, stackTrace) {
+    } catch (e) {
       throw ParseException(
         'Ошибка парсинга пагинированного ответа: ${e.toString()}',
       );
@@ -36,7 +36,7 @@ abstract class BaseRemoteDataSource {
 
     try {
       return fromJson(response.data);
-    } catch (e, stackTrace) {
+    } catch (e) {
       throw ParseException(
         'Ошибка парсинга ответа: ${e.toString()}',
       );
@@ -109,7 +109,6 @@ abstract class BaseRemoteDataSource {
           code: 'SSL_ERROR',
         );
 
-      case DioExceptionType.unknown:
       default:
         if (error.message?.contains('SocketException') ?? false) {
           return const NetworkException('Нет подключения к интернету');

@@ -18,7 +18,7 @@ class MovieDto {
   final double? totalBoxOffice;
   final int length;
   final PersonDto director;
-  final MovieGenre? genre;
+  final MovieGenre genre;
   final PersonDto? operator;
 
   const MovieDto({
