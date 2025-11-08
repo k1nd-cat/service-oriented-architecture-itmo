@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webapp/features/movies/presentation/extensions/enums_ui_extensions.dart';
@@ -116,6 +118,27 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     for (var c in allControllers) {
       c.addListener(_updateFormValid);
     }
+    _coordinateYController.addListener(() {
+      _deleteSuperfluousCharacters(_coordinateYController, 6);
+    });
+  }
+
+  void _deleteSuperfluousCharacters(TextEditingController controller,
+      int maxLength) {
+    setState(() {
+      var text = controller.text;
+      if (!text.contains('.')) return;
+
+      List<String> parts = text.split('.');
+      String intPart = parts[0];
+      String decPart = parts[1];
+
+      if (decPart.length > maxLength) {
+        decPart = decPart.substring(0, maxLength);
+      }
+
+      controller.text = '$intPart.$decPart';
+    });
   }
 
   void _onSavePressed() async {
@@ -156,13 +179,23 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
   Widget _buildSectionTitle(String title, IconData icon) {
     return Row(
       children: [
-        Icon(icon, color: Theme.of(context).colorScheme.primary),
+        Icon(icon, color: Theme
+            .of(context)
+            .colorScheme
+            .primary),
         const SizedBox(width: 8),
         Text(
           title,
-          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+          style: Theme
+              .of(context)
+              .textTheme
+              .headlineSmall
+              ?.copyWith(
             fontWeight: FontWeight.bold,
-            color: Theme.of(context).colorScheme.onSurface,
+            color: Theme
+                .of(context)
+                .colorScheme
+                .onSurface,
           ),
         ),
       ],
@@ -170,14 +203,21 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
   }
 
   Widget _buildPersonCard(bool isDirector) {
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final isSmallScreen = MediaQuery
+        .of(context)
+        .size
+        .width < 600;
 
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
         side: BorderSide(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+          color: Theme
+              .of(context)
+              .colorScheme
+              .outline
+              .withOpacity(0.2),
         ),
       ),
       child: Padding(
@@ -200,6 +240,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                         ? _directorNameController
                         : _operatorNameController,
                     label: "Имя",
+                    maxLength: 150,
                     validations: [
                       ValidationConditions(
                         name: "Не может быть пустым",
@@ -214,10 +255,12 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                         ? _directorPassportIDController
                         : _operatorPassportIDController,
                     label: "ID паспорта",
+                    maxLength: 20,
                     validations: [
                       ValidationConditions(
                         name: "Минимальная длина: 8",
-                        condition: (text) => text.isNotEmpty && text.length >= 8,
+                        condition: (text) =>
+                        text.isNotEmpty && text.length >= 8,
                       ),
                     ],
                   ),
@@ -250,7 +293,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                       validations: [
                         ValidationConditions(
                           name: "Минимальная длина: 8",
-                          condition: (text) => text.isNotEmpty && text.length >= 8,
+                          condition: (text) =>
+                          text.isNotEmpty && text.length >= 8,
                         ),
                       ],
                     ),
@@ -263,7 +307,11 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
             // Внешность
             Text(
               'Внешность',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -298,7 +346,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                       ? _selectedDirectorHairColor
                       : _selectedOperatorHairColor,
                   enumValues: HairColor.values,
-                  label: 'Цвет волос', // Исправлено!
+                  label: 'Цвет волос',
+                  // Исправлено!
                   allowNull: false,
                   itemNameBuilder: (hairColor) => hairColor.uiString,
                   onChanged: (HairColor? g) {
@@ -338,7 +387,11 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
             // Местоположение
             Text(
               'Местоположение',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: Theme
+                  .of(context)
+                  .textTheme
+                  .titleMedium
+                  ?.copyWith(
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -404,7 +457,10 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(createMovieProvider);
-    final isSmallScreen = MediaQuery.of(context).size.width < 600;
+    final isSmallScreen = MediaQuery
+        .of(context)
+        .size
+        .width < 600;
 
     return Center(
       child: ConstrainedBox(
@@ -416,7 +472,10 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
             children: [
               Card(
                 elevation: 4,
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: Theme
+                    .of(context)
+                    .colorScheme
+                    .primaryContainer,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                 ),
@@ -427,7 +486,10 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                       Icon(
                         widget.movie == null ? Icons.add_circle : Icons.edit,
                         size: 40,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                        color: Theme
+                            .of(context)
+                            .colorScheme
+                            .onPrimaryContainer,
                       ),
                       const SizedBox(width: 16),
                       Expanded(
@@ -435,10 +497,19 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.movie == null ? 'Создание фильма' : 'Редактирование фильма',
-                              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                              widget.movie == null
+                                  ? 'Создание фильма'
+                                  : 'Редактирование фильма',
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
                                 fontWeight: FontWeight.bold,
-                                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                color: Theme
+                                    .of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -446,8 +517,16 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                               widget.movie == null
                                   ? 'Заполните все поля для создания нового фильма'
                                   : 'Измените необходимые поля',
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimaryContainer.withOpacity(0.8),
+                              style: Theme
+                                  .of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                color: Theme
+                                    .of(context)
+                                    .colorScheme
+                                    .onPrimaryContainer
+                                    .withOpacity(0.8),
                               ),
                             ),
                           ],
@@ -466,7 +545,11 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme
+                        .of(context)
+                        .colorScheme
+                        .outline
+                        .withOpacity(0.2),
                   ),
                 ),
                 child: Padding(
@@ -481,6 +564,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                         width: double.infinity,
                         textEditingController: _movieNameController,
                         label: "Название фильма",
+                        maxLength: 255,
                         validations: [
                           ValidationConditions(
                             name: "Не может быть пустым",
@@ -501,7 +585,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                               validations: [
                                 ValidationConditions(
                                   name: "Целое число",
-                                  condition: (text) => int.tryParse(text) != null,
+                                  condition: (text) =>
+                                  int.tryParse(text) != null,
                                 ),
                                 ValidationConditions(
                                   name: "Больше нуля",
@@ -543,7 +628,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                               validations: [
                                 ValidationConditions(
                                   name: "Целое число",
-                                  condition: (text) => int.tryParse(text) != null,
+                                  condition: (text) =>
+                                  int.tryParse(text) != null,
                                 ),
                                 ValidationConditions(
                                   name: "Больше нуля",
@@ -583,7 +669,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                               validations: [
                                 ValidationConditions(
                                   name: "Целое число",
-                                  condition: (text) => int.tryParse(text) != null,
+                                  condition: (text) =>
+                                  int.tryParse(text) != null,
                                 ),
                                 ValidationConditions(
                                   name: "Больше нуля",
@@ -623,7 +710,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                               validations: [
                                 ValidationConditions(
                                   name: "Целое число",
-                                  condition: (text) => int.tryParse(text) != null,
+                                  condition: (text) =>
+                                  int.tryParse(text) != null,
                                 ),
                                 ValidationConditions(
                                   name: "Больше нуля",
@@ -656,7 +744,11 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
 
                       Text(
                         'Координаты фильма',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        style: Theme
+                            .of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -698,10 +790,10 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                                   double.tryParse(text) != null,
                                 ),
                                 ValidationConditions(
-                                  name: "Больше -612",
+                                  name: "Не меньше -612",
                                   condition: (text) {
                                     final y = double.tryParse(text);
-                                    return y != null && y > -612;
+                                    return y != null && y >= -612;
                                   },
                                 ),
                               ],
@@ -722,7 +814,11 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),
                   side: BorderSide(
-                    color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                    color: Theme
+                        .of(context)
+                        .colorScheme
+                        .outline
+                        .withOpacity(0.2),
                   ),
                 ),
                 child: Padding(
@@ -734,23 +830,36 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                         children: [
                           Checkbox(
                             value: isOperator,
-                            onChanged: (value) => setState(() {
-                              isOperator = value!;
-                              _isFormValid = validateAndCreateDraft() != null;
-                            }),
+                            onChanged: (value) =>
+                                setState(() {
+                                  isOperator = value!;
+                                  _isFormValid =
+                                      validateAndCreateDraft() != null;
+                                }),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             'Добавить оператора',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            style: Theme
+                                .of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(
                               fontWeight: FontWeight.w600,
                             ),
                           ),
                           const SizedBox(width: 8),
                           Text(
                             '(необязательно)',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            style: Theme
+                                .of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                              color: Theme
+                                  .of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant,
                             ),
                           ),
                         ],
@@ -791,15 +900,21 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                         child: CircularProgressIndicator(
                           strokeWidth: 2,
                           valueColor: AlwaysStoppedAnimation<Color>(
-                            Theme.of(context).colorScheme.onPrimary,
+                            Theme
+                                .of(context)
+                                .colorScheme
+                                .onPrimary,
                           ),
                         ),
                       )
-                          : Icon(widget.movie == null ? Icons.save : Icons.update),
+                          : Icon(
+                          widget.movie == null ? Icons.save : Icons.update),
                       label: Text(
                         state.isLoading
                             ? 'Сохранение...'
-                            : (widget.movie == null ? 'Создать фильм' : 'Сохранить изменения'),
+                            : (widget.movie == null
+                            ? 'Создать фильм'
+                            : 'Сохранить изменения'),
                         style: const TextStyle(fontSize: 16),
                       ),
                     ),
@@ -811,7 +926,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
+                      onPressed: state.isLoading ? null : () =>
+                          Navigator.of(context).pop(),
                       icon: const Icon(Icons.arrow_back),
                       label: const Text(
                         'Вернуться назад',
@@ -831,7 +947,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        onPressed: state.isLoading ? null : () => Navigator.of(context).pop(),
+                        onPressed: state.isLoading ? null : () =>
+                            Navigator.of(context).pop(),
                         icon: const Icon(Icons.arrow_back),
                         label: const Text(
                           'Вернуться назад',
@@ -858,15 +975,21 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                           child: CircularProgressIndicator(
                             strokeWidth: 2,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              Theme.of(context).colorScheme.onPrimary,
+                              Theme
+                                  .of(context)
+                                  .colorScheme
+                                  .onPrimary,
                             ),
                           ),
                         )
-                            : Icon(widget.movie == null ? Icons.save : Icons.update),
+                            : Icon(
+                            widget.movie == null ? Icons.save : Icons.update),
                         label: Text(
                           state.isLoading
                               ? 'Сохранение...'
-                              : (widget.movie == null ? 'Создать фильм' : 'Сохранить изменения'),
+                              : (widget.movie == null
+                              ? 'Создать фильм'
+                              : 'Сохранить изменения'),
                           style: const TextStyle(fontSize: 16),
                         ),
                       ),
