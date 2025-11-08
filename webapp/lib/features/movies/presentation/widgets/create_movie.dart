@@ -137,9 +137,15 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
         decPart = decPart.substring(0, maxLength);
       }
 
-      controller.text = '$intPart.$decPart';
+      String newText = '$intPart.$decPart';
+
+      controller.value = TextEditingValue(
+        text: newText,
+        selection: TextSelection.collapsed(offset: newText.length),
+      );
     });
   }
+
 
   void _onSavePressed() async {
     final draft = validateAndCreateDraft();
@@ -275,6 +281,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                           ? _directorNameController
                           : _operatorNameController,
                       label: "Имя",
+                      maxLength: 150,
                       validations: [
                         ValidationConditions(
                           name: "Не может быть пустым",
@@ -290,6 +297,7 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
                           ? _directorPassportIDController
                           : _operatorPassportIDController,
                       label: "ID паспорта",
+                      maxLength: 20,
                       validations: [
                         ValidationConditions(
                           name: "Минимальная длина: 8",
