@@ -32,7 +32,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
   Country? _operatorNationality;
   List<SortField> _selectedSorts = [];
 
-  // Доступные поля для сортировки
   static const List<String> _availableSortFields = [
     'name',
     'creationDate',
@@ -56,7 +55,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
     super.initState();
     final filters = ref.read(moviesFilterProvider);
 
-    // Инициализация контроллеров
     _nameController = TextEditingController(text: filters.name);
     _minOscarsController = TextEditingController(
       text: filters.oscarsCount.min?.toString(),
@@ -95,7 +93,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
     _selectedGenre = filters.genre;
     _operatorNationality = filters.operator.nationality;
 
-    // Парсинг существующей сортировки
     _parseSortString(filters.sort);
   }
 
@@ -163,18 +160,16 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
     return AlertDialog(
       title: const Text('Фильтры'),
       content: SizedBox(
-        width: MediaQuery.of(context).size.width * 0.8,
+        width: 400,
         child: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Секция сортировки
               _buildSortSection(),
               const Divider(),
               const SizedBox(height: 16),
 
-              // Название
               TextField(
                 controller: _nameController,
                 decoration: const InputDecoration(
@@ -184,7 +179,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Жанр
               DropdownButtonFormField<MovieGenre>(
                 value: _selectedGenre,
                 decoration: const InputDecoration(labelText: 'Жанр'),
@@ -199,19 +193,15 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
               ),
               const SizedBox(height: 16),
 
-              // Оскары
               _buildRangeSection('Количество Оскаров', _minOscarsController, _maxOscarsController),
               const SizedBox(height: 16),
 
-              // Длительность
               _buildRangeSection('Длительность (мин)', _minLengthController, _maxLengthController),
               const SizedBox(height: 16),
 
-              // Кассовые сборы
               _buildRangeSection('Кассовые сборы', _minBoxOfficeController, _maxBoxOfficeController, isDouble: true),
               const SizedBox(height: 16),
 
-              // Координаты
               Text('Координаты', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               _buildRangeSection('X', _minXController, _maxXController),
@@ -219,7 +209,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
               _buildRangeSection('Y', _minYController, _maxYController, isDouble: true),
               const SizedBox(height: 16),
 
-              // Оператор
               Text('Оператор', style: Theme.of(context).textTheme.titleSmall),
               const SizedBox(height: 8),
               TextField(
@@ -249,7 +238,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
       actions: [
         TextButton(
           onPressed: () {
-            // Сброс фильтров
             ref.read(moviesFilterProvider.notifier).state = const MoviesFilter(
               sort: null,
               name: null,
@@ -274,7 +262,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
         ),
         ElevatedButton(
           onPressed: () {
-            // Применение фильтров
             final sortString = _buildSortString();
             final filters = MoviesFilter(
               sort: sortString.isEmpty ? null : sortString,
@@ -408,7 +395,6 @@ class _FiltersDialogState extends ConsumerState<FiltersDialog> {
   }
 }
 
-// Диалог для добавления поля сортировки
 class _SortFieldDialog extends StatefulWidget {
   final List<String> availableFields;
   final Function(String field, String direction) onAdd;
@@ -452,7 +438,7 @@ class _SortFieldDialogState extends State<_SortFieldDialog> {
             onChanged: (value) => setState(() => _selectedField = value),
           ),
           const SizedBox(height: 16),
-          Row(
+          Wrap(
             children: [
               const Text('Направление:'),
               const SizedBox(width: 16),
