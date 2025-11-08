@@ -55,13 +55,9 @@ class _ValidationTestFieldState extends State<ValidationTestField>
       vsync: this,
     );
 
-    _shakeAnimation = Tween<double>(
-      begin: 0,
-      end: 10,
-    ).animate(CurvedAnimation(
-      parent: _shakeController,
-      curve: Curves.elasticIn,
-    ));
+    _shakeAnimation = Tween<double>(begin: 0, end: 10).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticIn),
+    );
 
     _controller.addListener(_onTextChanged);
     _focusNode.addListener(_onFocusChanged);
@@ -142,8 +138,9 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                   boxShadow: [
                     if (_isFocused)
                       BoxShadow(
-                        color: (_isValid ? colorScheme.primary : colorScheme.error)
-                            .withOpacity(0.1),
+                        color:
+                            (_isValid ? colorScheme.primary : colorScheme.error)
+                                .withOpacity(0.1),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -176,42 +173,46 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                           hintText: widget.hintText,
                           labelStyle: TextStyle(
                             color: _isFocused
-                                ? (_isValid ? colorScheme.primary : colorScheme.error)
+                                ? (_isValid
+                                      ? colorScheme.primary
+                                      : colorScheme.error)
                                 : colorScheme.onSurfaceVariant,
                             fontWeight: FontWeight.w500,
                             fontSize: _isFocused ? 14 : 16,
                           ),
                           hintStyle: TextStyle(
-                            color: colorScheme.onSurfaceVariant.withOpacity(0.4),
+                            color: colorScheme.onSurfaceVariant.withOpacity(
+                              0.4,
+                            ),
                             fontWeight: FontWeight.w400,
                           ),
                           prefixIcon: widget.prefixIcon != null
                               ? Icon(
-                            widget.prefixIcon,
-                            size: 20,
-                            color: _isFocused
-                                ? (_isValid ? colorScheme.primary : colorScheme.error)
-                                : colorScheme.onSurfaceVariant,
-                          )
+                                  widget.prefixIcon,
+                                  size: 20,
+                                  color: _isFocused
+                                      ? (_isValid
+                                            ? colorScheme.primary
+                                            : colorScheme.error)
+                                      : colorScheme.onSurfaceVariant,
+                                )
                               : null,
-                          suffixIcon: _hasInteracted
-                              ? AnimatedSwitcher(
+                          suffixIcon: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 200),
                             child: _isValid
                                 ? Icon(
-                              Icons.check_circle,
-                              key: const ValueKey('check'),
-                              color: Colors.green.shade600,
-                              size: 20,
-                            )
+                                    Icons.check_circle,
+                                    key: const ValueKey('check'),
+                                    color: Colors.green.shade600,
+                                    size: 20,
+                                  )
                                 : Icon(
-                              Icons.error_outline,
-                              key: const ValueKey('error'),
-                              color: colorScheme.error,
-                              size: 20,
-                            ),
-                          )
-                              : null,
+                                    Icons.error_outline,
+                                    key: const ValueKey('error'),
+                                    color: colorScheme.error,
+                                    size: 20,
+                                  ),
+                          ),
                           border: InputBorder.none,
                           enabledBorder: InputBorder.none,
                           focusedBorder: InputBorder.none,
@@ -222,7 +223,9 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                               : '',
                           counterStyle: TextStyle(
                             fontSize: 11,
-                            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                            color: colorScheme.onSurfaceVariant.withOpacity(
+                              0.6,
+                            ),
                           ),
                         ),
                       ),
@@ -249,7 +252,9 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                           widget.helperText!,
                           style: TextStyle(
                             fontSize: 12,
-                            color: colorScheme.onSurfaceVariant.withOpacity(0.6),
+                            color: colorScheme.onSurfaceVariant.withOpacity(
+                              0.6,
+                            ),
                           ),
                         ),
                       ],
@@ -264,7 +269,10 @@ class _ValidationTestFieldState extends State<ValidationTestField>
     );
   }
 
-  Widget _buildValidationItem(ValidationConditions validation, ColorScheme colorScheme) {
+  Widget _buildValidationItem(
+    ValidationConditions validation,
+    ColorScheme colorScheme,
+  ) {
     final isValid = validation.condition(_controller.text);
     final color = isValid ? Colors.green.shade600 : colorScheme.error;
 
@@ -282,27 +290,24 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   color: color.withOpacity(0.1),
-                  border: Border.all(
-                    color: color.withOpacity(0.5),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: color.withOpacity(0.5), width: 1.5),
                 ),
                 child: Center(
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
                     child: isValid
                         ? Icon(
-                      Icons.check,
-                      key: ValueKey('${validation.name}_check'),
-                      size: 12,
-                      color: color,
-                    )
+                            Icons.check,
+                            key: ValueKey('${validation.name}_check'),
+                            size: 12,
+                            color: color,
+                          )
                         : Icon(
-                      Icons.close,
-                      key: ValueKey('${validation.name}_close'),
-                      size: 12,
-                      color: color,
-                    ),
+                            Icons.close,
+                            key: ValueKey('${validation.name}_close'),
+                            size: 12,
+                            color: color,
+                          ),
                   ),
                 ),
               ),
@@ -314,7 +319,9 @@ class _ValidationTestFieldState extends State<ValidationTestField>
                     fontSize: 13,
                     color: color,
                     fontWeight: isValid ? FontWeight.w500 : FontWeight.w400,
-                    decoration: isValid ? TextDecoration.none : TextDecoration.none,
+                    decoration: isValid
+                        ? TextDecoration.none
+                        : TextDecoration.none,
                   ),
                   child: Text(validation.name),
                 ),
