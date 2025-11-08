@@ -23,10 +23,10 @@ public class PersonEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 150)
     private String name;
 
-    @Column(name = "passport_id", nullable = false, unique = true, length = 50)
+    @Column(name = "passport_id", nullable = false, unique = true, length = 20)
     private String passportID;
 
     @Enumerated(EnumType.STRING)

@@ -100,6 +100,7 @@ components:
           type: string
           description: Название фильма
           minLength: 1
+          maxLength: 255
           example: "Криминальное чтиво"
         coordinates:
           $ref: '#/components/schemas/Coordinates'
@@ -165,11 +166,13 @@ components:
           type: string
           description: Имя человека (режиссера или оператора)
           minLength: 1
+          maxLength: 150
           example: "Квентин Тарантино"
         passportID:
           type: string
           description: Номер паспорта (уникальный)
           minLength: 8
+          maxLength: 20
           example: "AB1234567"
         eyeColor:
           $ref: '#/components/schemas/EyeColor'
