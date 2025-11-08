@@ -129,7 +129,7 @@ class MoviesRepositoryImpl extends MoviesRepository {
   }) async {
     try {
       final paginatedMoviesDto = await moviesRemoteDataSource
-          .getMoviesByFilters(filters);
+          .getMoviesByFilters(filters, size: size, page: page);
       final paginatedMovies = PaginatedResponse<Movie>(
         page: paginatedMoviesDto.page,
         size: paginatedMoviesDto.size,
