@@ -438,11 +438,15 @@ class _SortFieldDialogState extends State<_SortFieldDialog> {
             onChanged: (value) => setState(() => _selectedField = value),
           ),
           const SizedBox(height: 16),
-          Wrap(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            spacing: 16,
             children: [
               const Text('Направление:'),
-              const SizedBox(width: 16),
-              Expanded(
+              SizedBox(
+                width: 180,
                 child: RadioListTile<String>(
                   title: const Text('По возрастанию'),
                   value: 'asc',
@@ -451,7 +455,8 @@ class _SortFieldDialogState extends State<_SortFieldDialog> {
                   dense: true,
                 ),
               ),
-              Expanded(
+              SizedBox(
+                width: 180,
                 child: RadioListTile<String>(
                   title: const Text('По убыванию'),
                   value: 'desc',
@@ -461,7 +466,7 @@ class _SortFieldDialogState extends State<_SortFieldDialog> {
                 ),
               ),
             ],
-          ),
+          )
         ],
       ),
       actions: [
