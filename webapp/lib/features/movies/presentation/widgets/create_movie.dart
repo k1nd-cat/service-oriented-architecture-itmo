@@ -1,5 +1,3 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webapp/features/movies/presentation/extensions/enums_ui_extensions.dart';
@@ -1029,8 +1027,8 @@ class _CreateMovieState extends ConsumerState<CreateMovie> {
     final coordinateX = int.tryParse(_coordinateXController.text);
     final coordinateY = double.tryParse(_coordinateYController.text);
     if (coordinateX == null || coordinateY == null) return null;
-    if (coordinateX <= -651) return null;
-    if (coordinateY <= -612) return null;
+    if (coordinateX < -651) return null;
+    if (coordinateY < -612) return null;
 
     final oscarsCount = int.tryParse(_oscarCountController.text);
     if (oscarsCount == null || oscarsCount <= 0) return null;
