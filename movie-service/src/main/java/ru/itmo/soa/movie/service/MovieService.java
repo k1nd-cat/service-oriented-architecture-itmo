@@ -259,7 +259,13 @@ public class MovieService {
         if (person.getPassportID() != null) {
             Optional<PersonEntity> existingPerson = personRepository.findByPassportID(person.getPassportID());
             if (existingPerson.isPresent()) {
-                return existingPerson.get();
+                PersonEntity existing = existingPerson.get();
+                existing.setName(person.getName());
+                existing.setEyeColor(person.getEyeColor());
+                existing.setHairColor(person.getHairColor());
+                existing.setNationality(person.getNationality());
+                existing.setLocation(person.getLocation());
+                return personRepository.save(existing);
             }
         }
         return personRepository.save(person);
