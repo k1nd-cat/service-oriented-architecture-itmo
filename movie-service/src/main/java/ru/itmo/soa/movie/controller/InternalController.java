@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
 import ru.itmo.soa.movie.dto.internal.MovieGenre;
 import ru.itmo.soa.movie.dto.internal.OscarDirectorsGetLoosersPost200ResponseInner;
 import ru.itmo.soa.movie.dto.internal.OscarDirectorsHumiliateByGenreGenrePost200Response;
@@ -21,10 +22,11 @@ public class InternalController {
     private final MovieService movieService;
     private final ModelMapper modelMapper;
 
+    @DeprecatedEndpoint(see = "/api/v1/oscar/directors/get-loosers")
     @PostMapping("/oscar/directors/get-loosers")
     public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> getDirectorsWithoutOscars() {
         List<Map<String, Object>> directors = movieService.getDirectorsWithoutOscars();
-        
+
         List<OscarDirectorsGetLoosersPost200ResponseInner> response = directors.stream()
                 .map(director -> {
                     OscarDirectorsGetLoosersPost200ResponseInner dto = 
@@ -35,7 +37,7 @@ public class InternalController {
                     return dto;
                 })
                 .collect(Collectors.toList());
-        
+
         return ResponseEntity.ok(response);
     }
 
