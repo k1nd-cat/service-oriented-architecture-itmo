@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
 import ru.itmo.soa.movie.dto.publicapi.*;
 import ru.itmo.soa.movie.entity.MovieEntity;
 import ru.itmo.soa.movie.service.MovieService;
@@ -146,6 +147,7 @@ public class MoviesController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeprecatedEndpoint(see = "/api/v2/movies/calculate-total-length")
     @PostMapping("/movies/calculate-total-length")
     public ResponseEntity<MoviesCalculateTotalLengthPost200Response> calculateTotalLength() {
         Long totalLength = movieService.calculateTotalLength();

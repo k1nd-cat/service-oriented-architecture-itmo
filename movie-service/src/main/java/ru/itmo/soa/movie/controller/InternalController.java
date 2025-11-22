@@ -22,7 +22,6 @@ public class InternalController {
     private final MovieService movieService;
     private final ModelMapper modelMapper;
 
-    @DeprecatedEndpoint(see = "/api/v1/oscar/directors/get-loosers")
     @PostMapping("/oscar/directors/get-loosers")
     public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> getDirectorsWithoutOscars() {
         List<Map<String, Object>> directors = movieService.getDirectorsWithoutOscars();
