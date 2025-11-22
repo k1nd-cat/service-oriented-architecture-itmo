@@ -6,12 +6,12 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
 
-import jakarta.servlet.http.HttpServletResponse;
 import java.lang.reflect.Method;
 
 @Slf4j
@@ -27,20 +27,16 @@ public class DeprecatedEndpointAspect {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
         Method method = signature.getMethod();
 
-        String redirectUrl = method.getAnnotation(DeprecatedEndpoint.class).see();
-        ServletRequestAttributes attributes = 
-            (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        DeprecatedEndpoint annotation = method.getAnnotation(DeprecatedEndpoint.class);
+        String redirectUrl = annotation.see();
 
-        if (attributes != null) {
-            HttpServletResponse response = attributes.getResponse();
-            if (response != null) {
-                response.setStatus(HttpServletResponse.SC_FOUND);
-                response.setHeader("Location", redirectUrl);
-                return null;
-            }
-        }
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Location", redirectUrl);
 
-        return joinPoint.proceed();
+        return ResponseEntity
+                .status(HttpStatus.FOUND)
+                .headers(headers)
+                .build();
     }
 
 }
