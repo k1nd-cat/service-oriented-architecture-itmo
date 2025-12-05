@@ -7,9 +7,9 @@ spring:
     active: movie1
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/blss
-    username: postgres
-    password: ROOT
+    url: jdbc:postgresql://localhost:5432/movie_db
+    username: michael-bill
+    password:
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
