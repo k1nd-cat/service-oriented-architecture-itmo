@@ -3,31 +3,11 @@ package ru.itmo.soa.movie.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class OpenApiConfig {
-
-    @Bean
-    public GroupedOpenApi publicApi() {
-        return GroupedOpenApi.builder()
-                .group("public")
-                .displayName("Public API")
-                .pathsToMatch("/api/v1/movies/**", "/api/v1/oscar/**")
-                .pathsToExclude("/api/v1/internal/**")
-                .build();
-    }
-
-    @Bean
-    public GroupedOpenApi internalApi() {
-        return GroupedOpenApi.builder()
-                .group("internal")
-                .displayName("Internal API")
-                .pathsToMatch("/api/v1/internal/**")
-                .build();
-    }
 
     @Bean
     public OpenAPI customOpenAPI() {
@@ -36,10 +16,11 @@ public class OpenApiConfig {
                         .title("Movie Collection Management API")
                         .version("1.0.0")
                         .description("""
-                                API для управления коллекцией фильмов. Включает:
-                                1. CRUD операции для управления фильмами
-                                2. Поиск и фильтрацию фильмов
-                                3. Операции с "Оскарами"
+                                API для управления коллекцией фильмов.
+                                
+                                Endpoints сгруппированы по тегам:
+                                - Movies - публичные операции для управления фильмами (используются фронтендом)
+                                - Internal API - внутренние операции для межсервисного взаимодействия
                                 """)
                         .contact(new Contact()
                                 .name("API Support")

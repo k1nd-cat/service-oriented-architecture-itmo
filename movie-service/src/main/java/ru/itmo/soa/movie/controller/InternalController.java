@@ -5,7 +5,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
-import ru.itmo.soa.movie.api.internal.OscarOperationsApi;
+import ru.itmo.soa.movie.api.internal.InternalApiApi;
 import ru.itmo.soa.movie.dto.internal.MovieGenre;
 import ru.itmo.soa.movie.dto.internal.GetDirectorsWithoutOscars200ResponseInner;
 import ru.itmo.soa.movie.dto.internal.HumiliateDirectorsByGenre200Response;
@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class InternalController implements OscarOperationsApi {
+public class InternalController implements InternalApiApi {
 
     private final MovieService movieService;
     private final ModelMapper modelMapper;

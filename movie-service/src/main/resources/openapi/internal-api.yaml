@@ -12,11 +12,11 @@ servers:
     description: Production server
 
 paths:
-  /oscar/directors/get-loosers:
+  /internal/oscar/directors/get-loosers:
     post:
       operationId: getDirectorsWithoutOscars
       tags:
-        - Oscar Operations
+        - Internal API
       summary: Получить список режиссеров-неудачников
       description: |
         Получает список режиссеров, ни один фильм которых не получил ни одного "Оскара".
@@ -43,11 +43,11 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
 
-  /oscar/directors/humiliate-by-genre/{genre}:
+  /internal/oscar/directors/humiliate-by-genre/{genre}:
     post:
       operationId: humiliateDirectorsByGenre
       tags:
-        - Oscar Operations
+        - Internal API
       summary: Отобрать Оскары у режиссеров по жанру
       description: |
         Отбирает все "Оскары" у всех фильмов режиссеров, снявших хоть один фильм в указанном жанре.

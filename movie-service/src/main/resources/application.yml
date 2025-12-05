@@ -52,4 +52,6 @@ springdoc:
     path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
+  override-with-generic-response: false
+  default-produces-media-type: application/json
 
