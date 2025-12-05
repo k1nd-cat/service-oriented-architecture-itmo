@@ -14,6 +14,7 @@ servers:
 paths:
   /movies/filters:
     post:
+      operationId: getMoviesWithFilters
       tags:
         - Movies
       summary: Получить список фильмов
@@ -75,6 +76,7 @@ paths:
 
   /movies:
     get:
+      operationId: getAllMovies
       tags:
         - Movies
       summary: Получить все фильмы
@@ -93,6 +95,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     post:
+      operationId: createMovie
       tags:
         - Movies
       summary: Создать новый фильм
@@ -117,6 +120,7 @@ paths:
 
   /movies/{id}:
     get:
+      operationId: getMovieById
       tags:
         - Movies
       summary: Получить фильм по ID
@@ -141,6 +145,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     put:
+      operationId: updateMovie
       tags:
         - Movies
       summary: Обновить фильм
@@ -173,6 +178,7 @@ paths:
         '500':
           $ref: '#/components/responses/InternalServerError'
     delete:
+      operationId: deleteMovie
       tags:
         - Movies
       summary: Удалить фильм
@@ -195,6 +201,7 @@ paths:
 
   /movies/calculate-total-length:
     post:
+      operationId: calculateTotalLength
       tags:
         - Movies
       summary: Рассчитать сумму длительности всех фильмов
@@ -216,6 +223,7 @@ paths:
 
   /movies/count-by-genre:
     post:
+      operationId: countMoviesByGenre
       tags:
         - Movies
       summary: Подсчитать количество фильмов по жанру
@@ -251,6 +259,7 @@ paths:
 
   /movies/search-by-name:
     post:
+      operationId: searchMoviesByName
       tags:
         - Movies
       summary: Найти фильмы по началу названия

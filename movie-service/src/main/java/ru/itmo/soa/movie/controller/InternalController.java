@@ -5,9 +5,10 @@ import org.modelmapper.ModelMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
+import ru.itmo.soa.movie.api.internal.OscarOperationsApi;
 import ru.itmo.soa.movie.dto.internal.MovieGenre;
-import ru.itmo.soa.movie.dto.internal.OscarDirectorsGetLoosersPost200ResponseInner;
-import ru.itmo.soa.movie.dto.internal.OscarDirectorsHumiliateByGenreGenrePost200Response;
+import ru.itmo.soa.movie.dto.internal.GetDirectorsWithoutOscars200ResponseInner;
+import ru.itmo.soa.movie.dto.internal.HumiliateDirectorsByGenre200Response;
 import ru.itmo.soa.movie.service.MovieService;
 
 import java.util.List;
@@ -17,19 +18,19 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class InternalController {
+public class InternalController implements OscarOperationsApi {
 
     private final MovieService movieService;
     private final ModelMapper modelMapper;
 
-    @PostMapping("/oscar/directors/get-loosers")
-    public ResponseEntity<List<OscarDirectorsGetLoosersPost200ResponseInner>> getDirectorsWithoutOscars() {
+    @Override
+    public ResponseEntity<List<GetDirectorsWithoutOscars200ResponseInner>> getDirectorsWithoutOscars() {
         List<Map<String, Object>> directors = movieService.getDirectorsWithoutOscars();
 
-        List<OscarDirectorsGetLoosersPost200ResponseInner> response = directors.stream()
+        List<GetDirectorsWithoutOscars200ResponseInner> response = directors.stream()
                 .map(director -> {
-                    OscarDirectorsGetLoosersPost200ResponseInner dto = 
-                            new OscarDirectorsGetLoosersPost200ResponseInner();
+                    GetDirectorsWithoutOscars200ResponseInner dto = 
+                            new GetDirectorsWithoutOscars200ResponseInner();
                     dto.setName((String) director.get("name"));
                     dto.setPassportID((String) director.get("passportID"));
                     dto.setFilmsCount(((Long) director.get("filmsCount")).intValue());
@@ -40,14 +41,14 @@ public class InternalController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/oscar/directors/humiliate-by-genre/{genre}")
-    public ResponseEntity<OscarDirectorsHumiliateByGenreGenrePost200Response> humiliateDirectorsByGenre(
-            @PathVariable("genre") MovieGenre genre) {
+    @Override
+    public ResponseEntity<HumiliateDirectorsByGenre200Response> humiliateDirectorsByGenre(
+            MovieGenre genre) {
         Map<String, Object> result = movieService.humiliateDirectorsByGenre(
                 modelMapper.map(genre, ru.itmo.soa.movie.entity.enums.MovieGenre.class));
 
-        OscarDirectorsHumiliateByGenreGenrePost200Response response = 
-                new OscarDirectorsHumiliateByGenreGenrePost200Response();
+        HumiliateDirectorsByGenre200Response response = 
+                new HumiliateDirectorsByGenre200Response();
         response.setAffectedDirectors((Integer) result.get("affectedDirectors"));
         response.setAffectedMovies((Integer) result.get("affectedMovies"));
         response.setRemovedOscars(((Long) result.get("removedOscars")).intValue());

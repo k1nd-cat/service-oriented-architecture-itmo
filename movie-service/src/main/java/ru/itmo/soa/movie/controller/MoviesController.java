@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.itmo.soa.movie.annotation.DeprecatedEndpoint;
+import ru.itmo.soa.movie.api.publicapi.MoviesApi;
 import ru.itmo.soa.movie.dto.publicapi.*;
 import ru.itmo.soa.movie.entity.MovieEntity;
 import ru.itmo.soa.movie.service.MovieService;
@@ -17,16 +18,19 @@ import java.util.stream.Collectors;
 @RestController
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
-public class MoviesController {
+public class MoviesController implements MoviesApi {
 
     private final MovieService movieService;
     private final ModelMapper modelMapper;
 
-    @PostMapping("/movies/filters")
-    public ResponseEntity<MoviesFiltersPost200Response> getMoviesWithFilters(
-            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam(value = "size", required = false, defaultValue = "20") Integer size,
-            @RequestBody(required = false) MovieSearchRequest movieSearchRequest) {
+    @Override
+    public ResponseEntity<GetMoviesWithFilters200Response> getMoviesWithFilters(
+            Integer page,
+            Integer size,
+            MovieSearchRequest movieSearchRequest) {
+        
+        if (page == null) page = 1;
+        if (size == null) size = 20;
         
         Map<String, Object> filters = new HashMap<>();
         String sortString = null;
@@ -109,7 +113,7 @@ public class MoviesController {
         
         Page<MovieEntity> moviesPage = movieService.getAllMovies(filters, sortString, page, size);
         
-        MoviesFiltersPost200Response response = new MoviesFiltersPost200Response();
+        GetMoviesWithFilters200Response response = new GetMoviesWithFilters200Response();
         response.setContent(moviesPage.getContent().stream()
                 .map(entity -> modelMapper.map(entity, Movie.class))
                 .collect(Collectors.toList()));
@@ -121,57 +125,57 @@ public class MoviesController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/movies")
-    public ResponseEntity<Movie> createMovie(@RequestBody MovieRequest movieRequest) {
+    @Override
+    public ResponseEntity<Movie> createMovie(MovieRequest movieRequest) {
         MovieEntity entity = modelMapper.map(movieRequest, MovieEntity.class);
         MovieEntity created = movieService.createMovie(entity);
         return ResponseEntity.status(HttpStatus.CREATED).body(modelMapper.map(created, Movie.class));
     }
 
-    @GetMapping("/movies/{id}")
-    public ResponseEntity<Movie> getMovieById(@PathVariable("id") Integer id) {
+    @Override
+    public ResponseEntity<Movie> getMovieById(Integer id) {
         MovieEntity movie = movieService.getMovieById(id.longValue());
         return ResponseEntity.ok(modelMapper.map(movie, Movie.class));
     }
 
-    @PutMapping("/movies/{id}")
-    public ResponseEntity<Movie> updateMovie(@PathVariable("id") Integer id, @RequestBody MovieRequest movieRequest) {
+    @Override
+    public ResponseEntity<Movie> updateMovie(Integer id, MovieRequest movieRequest) {
         MovieEntity entity = modelMapper.map(movieRequest, MovieEntity.class);
         MovieEntity updated = movieService.updateMovie(id.longValue(), entity);
         return ResponseEntity.ok(modelMapper.map(updated, Movie.class));
     }
 
-    @DeleteMapping("/movies/{id}")
-    public ResponseEntity<Void> deleteMovie(@PathVariable("id") Integer id) {
+    @Override
+    public ResponseEntity<Void> deleteMovie(Integer id) {
         movieService.deleteMovie(id.longValue());
         return ResponseEntity.noContent().build();
     }
 
+    @Override
     @DeprecatedEndpoint(see = "/api/v2/movies/calculate-total-length")
-    @PostMapping("/movies/calculate-total-length")
-    public ResponseEntity<MoviesCalculateTotalLengthPost200Response> calculateTotalLength() {
+    public ResponseEntity<CalculateTotalLength200Response> calculateTotalLength() {
         Long totalLength = movieService.calculateTotalLength();
         
-        MoviesCalculateTotalLengthPost200Response response = new MoviesCalculateTotalLengthPost200Response();
+        CalculateTotalLength200Response response = new CalculateTotalLength200Response();
         response.setTotalLength(totalLength);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/movies/count-by-genre")
-    public ResponseEntity<MoviesCountByGenrePost200Response> countMoviesByGenre(
-            @RequestBody MoviesCountByGenrePostRequest request) {
+    @Override
+    public ResponseEntity<CountMoviesByGenre200Response> countMoviesByGenre(
+            CountMoviesByGenreRequest request) {
         long count = movieService.countByGenre(
                 modelMapper.map(request.getGenre(), ru.itmo.soa.movie.entity.enums.MovieGenre.class));
         
-        MoviesCountByGenrePost200Response response = new MoviesCountByGenrePost200Response();
+        CountMoviesByGenre200Response response = new CountMoviesByGenre200Response();
         response.setGenre(request.getGenre());
         response.setCount((int) count);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/movies/search-by-name")
+    @Override
     public ResponseEntity<List<Movie>> searchMoviesByName(
-            @RequestBody MoviesSearchByNamePostRequest request) {
+            SearchMoviesByNameRequest request) {
         List<MovieEntity> movies = movieService.searchByNamePrefix(
                 request.getNamePrefix());
         
@@ -180,7 +184,7 @@ public class MoviesController {
                 .collect(Collectors.toList()));
     }
 
-    @GetMapping("/movies")
+    @Override
     public ResponseEntity<List<Movie>> getAllMovies() {
         List<MovieEntity> movies = movieService.getAllMovies();
         return ResponseEntity.ok(movies.stream()

@@ -3,22 +3,12 @@ package ru.itmo.soa.movie.config;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
-import io.swagger.v3.oas.models.servers.Server;
 import org.springdoc.core.models.GroupedOpenApi;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.List;
-
 @Configuration
 public class OpenApiConfig {
-
-    @Value("${api.server.host}")
-    private String serverHost;
-
-    @Value("${api.server.port}")
-    private String serverPort;
 
     @Bean
     public GroupedOpenApi publicApi() {
@@ -53,12 +43,6 @@ public class OpenApiConfig {
                                 """)
                         .contact(new Contact()
                                 .name("API Support")
-                                .email("ae.troshkin@gmail.com")))
-                .servers(List.of(
-                        new Server()
-                                .url("http://" + serverHost + ":" + serverPort + "/service1/api/v1")
-                                .description("Production server")
-                ));
+                                .email("ae.troshkin@gmail.com")));
     }
 }
-

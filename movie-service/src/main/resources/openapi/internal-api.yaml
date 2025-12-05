@@ -14,6 +14,7 @@ servers:
 paths:
   /oscar/directors/get-loosers:
     post:
+      operationId: getDirectorsWithoutOscars
       tags:
         - Oscar Operations
       summary: Получить список режиссеров-неудачников
@@ -44,6 +45,7 @@ paths:
 
   /oscar/directors/humiliate-by-genre/{genre}:
     post:
+      operationId: humiliateDirectorsByGenre
       tags:
         - Oscar Operations
       summary: Отобрать Оскары у режиссеров по жанру
