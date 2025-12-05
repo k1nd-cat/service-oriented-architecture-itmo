@@ -1,8 +1,8 @@
-package ru.itmo.soa.oscar.client;
+package ru.itmo.soa.oscar.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import lombok.extern.java.Log;
+import jakarta.ejb.Stateless;
 import ru.itmo.soa.oscar.config.AppConfig;
 import ru.itmo.soa.oscar.dto.DirectorInfo;
 import ru.itmo.soa.oscar.dto.HumiliateResponse;
@@ -17,24 +17,24 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
-@Log
-public class MovieServiceClient {
+@Stateless
+public class OscarServiceBean implements OscarService {
     
-    private final String movieServiceBaseUrl;
+    private static final Logger log = Logger.getLogger(OscarServiceBean.class.getName());
     private final ObjectMapper objectMapper;
+    private final String movieServiceBaseUrl;
     
-    public MovieServiceClient() {
-        this.movieServiceBaseUrl = AppConfig.getMovieServiceBaseUrl();
+    public OscarServiceBean() {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
-        log.info("MovieServiceClient initialized with base URL: " + movieServiceBaseUrl);
+        this.movieServiceBaseUrl = AppConfig.getMovieServiceBaseUrl();
+        log.info("OscarServiceBean initialized with base URL: " + movieServiceBaseUrl);
     }
     
-    /**
-     * Получить список режиссеров без Оскаров
-     */
-    public List<DirectorInfo> getLoosers() throws Exception {
+    @Override
+    public List<DirectorInfo> getDirectorsWithoutOscars() throws Exception {
         String url = movieServiceBaseUrl + "/oscar/directors/get-loosers";
         log.info("Calling movie-service: POST " + url);
         
@@ -49,7 +49,6 @@ public class MovieServiceClient {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
             
-            // POST запрос с пустым телом
             try (OutputStream os = connection.getOutputStream()) {
                 os.write("".getBytes(StandardCharsets.UTF_8));
                 os.flush();
@@ -88,10 +87,8 @@ public class MovieServiceClient {
         }
     }
     
-    /**
-     * Отобрать Оскары у режиссеров по жанру
-     */
-    public HumiliateResponse humiliateByGenre(MovieGenre genre) throws Exception {
+    @Override
+    public HumiliateResponse humiliateDirectorsByGenre(MovieGenre genre) throws Exception {
         String url = movieServiceBaseUrl + "/oscar/directors/humiliate-by-genre/" + genre.name();
         log.info("Calling movie-service: POST " + url);
         
@@ -106,7 +103,6 @@ public class MovieServiceClient {
             connection.setConnectTimeout(5000);
             connection.setReadTimeout(5000);
             
-            // POST запрос с пустым телом
             try (OutputStream os = connection.getOutputStream()) {
                 os.write("".getBytes(StandardCharsets.UTF_8));
                 os.flush();

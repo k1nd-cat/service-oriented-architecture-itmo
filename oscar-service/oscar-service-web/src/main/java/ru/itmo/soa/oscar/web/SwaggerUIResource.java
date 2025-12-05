@@ -1,33 +1,20 @@
-package ru.itmo.soa.oscar.config;
+package ru.itmo.soa.oscar.web;
 
 import io.swagger.v3.oas.annotations.Hidden;
-import jakarta.servlet.ServletContext;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 @Path("/swagger-ui")
 @Hidden
 public class SwaggerUIResource {
 
-    @Context
-    private ServletContext servletContext;
-
     @GET
     @Produces(MediaType.TEXT_HTML)
     public Response getSwaggerUI() {
-        String html = generateSwaggerUI();
-        return Response.ok(html).build();
-    }
-
-    private String generateSwaggerUI() {
-        return """
+        String html = """
             <!DOCTYPE html>
             <html lang="en">
             <head>
@@ -35,12 +22,6 @@ public class SwaggerUIResource {
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Oscar Service API - Swagger UI</title>
                 <link rel="stylesheet" href="https://unpkg.com/swagger-ui-dist@5.10.0/swagger-ui.css">
-                <style>
-                    body {
-                        margin: 0;
-                        padding: 0;
-                    }
-                </style>
             </head>
             <body>
                 <div id="swagger-ui"></div>
@@ -49,7 +30,7 @@ public class SwaggerUIResource {
                 <script>
                     window.onload = function() {
                         const ui = SwaggerUIBundle({
-                            url: window.location.origin + window.location.pathname.replace('/swagger-ui', '/api/v1/openapi.json'),
+                            url: window.location.origin + window.location.pathname.replace('/swagger-ui', '/openapi.json'),
                             dom_id: '#swagger-ui',
                             deepLinking: true,
                             presets: [
@@ -67,6 +48,7 @@ public class SwaggerUIResource {
             </body>
             </html>
             """;
+        return Response.ok(html).build();
     }
 }
 

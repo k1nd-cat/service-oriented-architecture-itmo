@@ -11,7 +11,7 @@ PAYARA_HOME="${SCRIPT_DIR}/payara/payara6"
 ASADMIN="${PAYARA_HOME}/bin/asadmin"
 
 MOVIE_SERVICE_JAR="${SCRIPT_DIR}/movie-service/target/movie-service-1.0.0.jar"
-OSCAR_SERVICE_WAR="${SCRIPT_DIR}/oscar-service/target/oscar-service-1.0.0.war"
+OSCAR_SERVICE_EAR="${SCRIPT_DIR}/oscar-service/oscar-service-ear/target/oscar-service-1.0.0.ear"
 
 echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Starting deployment script${NC}"
@@ -52,7 +52,7 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}Movie-service build completed${NC}"
 
-echo -e "${BLUE}Building oscar-service...${NC}"
+echo -e "${BLUE}Building oscar-service (EAR with EJB)...${NC}"
 cd "${SCRIPT_DIR}/oscar-service"
 mvn clean package -DskipTests
 if [ $? -ne 0 ]; then
@@ -96,10 +96,10 @@ if [ ! -z "$MOVIE_PID" ]; then
     sleep 2
 fi
 
-APP_EXISTS=$("${ASADMIN}" list-applications | grep "^service2" | wc -l)
+APP_EXISTS=$("${ASADMIN}" list-applications | grep "^oscar-service" | wc -l)
 if [ "$APP_EXISTS" -gt 0 ]; then
     echo -e "${BLUE}Undeploying oscar-service...${NC}"
-    "${ASADMIN}" undeploy service2
+    "${ASADMIN}" undeploy oscar-service
 fi
 
 echo -e "\n${YELLOW}[5/5] Starting services...${NC}"
@@ -111,13 +111,13 @@ MOVIE_PID=$!
 echo -e "${GREEN}Movie-service started (PID: ${MOVIE_PID})${NC}"
 sleep 3
 
-echo -e "${BLUE}Deploying oscar-service to Payara...${NC}"
-"${ASADMIN}" deploy --name service2 --contextroot service2 "${OSCAR_SERVICE_WAR}"
+echo -e "${BLUE}Deploying oscar-service EAR to Payara...${NC}"
+"${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}"
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment of oscar-service failed!${NC}"
     exit 1
 fi
-echo -e "${GREEN}Oscar-service deployed successfully${NC}"
+echo -e "${GREEN}Oscar-service EAR deployed successfully${NC}"
 
 echo -e "\n${GREEN}========================================${NC}"
 echo -e "${GREEN}Deployment completed successfully!${NC}"
@@ -129,13 +129,16 @@ echo -e "  API Docs: ${YELLOW}http://localhost:9000/service1/api-docs${NC}"
 echo -e "  Public API: ${YELLOW}http://localhost:9000/service1/api/v1/movies${NC}"
 echo -e "  Internal API: ${YELLOW}http://localhost:9000/service1/api/v1/internal/oscar/directors/get-loosers${NC}"
 echo -e "  Logs: ${YELLOW}tail -f /tmp/movie-service.log${NC}"
-echo -e "\n${GREEN}Service 2 (Oscar Service - Payara):${NC}"
+echo -e "\n${GREEN}Service 2 (Oscar Service - Payara EAR with EJB):${NC}"
 echo -e "  Application URL: ${YELLOW}http://localhost:9001/service2${NC}"
 echo -e "  Swagger UI: ${YELLOW}http://localhost:9001/service2/swagger-ui${NC}"
 echo -e "  OpenAPI Spec: ${YELLOW}http://localhost:9001/service2/openapi.json${NC}"
 echo -e "  API Endpoints:"
 echo -e "    - ${YELLOW}POST http://localhost:9001/service2/oscar/directors/get-loosers${NC}"
 echo -e "    - ${YELLOW}POST http://localhost:9001/service2/oscar/directors/humiliate-by-genre/{genre}${NC}"
+echo -e "  ${BLUE}EJB Configuration:${NC}"
+echo -e "    - Stateless EJB with Remote interface"
+echo -e "    - Pool: steady-size=5, max=20, resize=2"
 echo -e "\n${BLUE}Utility commands:${NC}"
 echo -e "  Stop movie-service: ${YELLOW}kill \$(pgrep -f movie-service-1.0.0.jar)${NC}"
 echo -e "  View Payara logs: ${YELLOW}tail -f ${PAYARA_HOME}/glassfish/domains/domain1/logs/server.log${NC}"

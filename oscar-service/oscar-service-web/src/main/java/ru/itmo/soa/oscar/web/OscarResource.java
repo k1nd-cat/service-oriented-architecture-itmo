@@ -1,4 +1,4 @@
-package ru.itmo.soa.oscar.resource;
+package ru.itmo.soa.oscar.web;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -7,32 +7,31 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import lombok.extern.java.Log;
-import ru.itmo.soa.oscar.client.MovieServiceClient;
 import ru.itmo.soa.oscar.dto.DirectorInfo;
 import ru.itmo.soa.oscar.dto.ErrorResponse;
 import ru.itmo.soa.oscar.dto.HumiliateResponse;
 import ru.itmo.soa.oscar.dto.MovieGenre;
+import ru.itmo.soa.oscar.service.OscarService;
 
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 @Path("/oscar/directors")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Oscar Operations", description = "Операции с \"Оскарами\"")
-@Log
 public class OscarResource {
     
-    private final MovieServiceClient movieServiceClient;
+    private static final Logger log = Logger.getLogger(OscarResource.class.getName());
     
-    public OscarResource() {
-        this.movieServiceClient = new MovieServiceClient();
-    }
+    @EJB
+    private OscarService oscarService;
     
     @POST
     @Path("/get-loosers")
@@ -61,7 +60,7 @@ public class OscarResource {
     public Response getLoosers() {
         try {
             log.info("GET /oscar/directors/get-loosers - getting directors without oscars");
-            List<DirectorInfo> directors = movieServiceClient.getLoosers();
+            List<DirectorInfo> directors = oscarService.getDirectorsWithoutOscars();
             log.info("Successfully retrieved " + directors.size() + " directors");
             return Response.ok(directors).build();
         } catch (Exception e) {
@@ -120,7 +119,6 @@ public class OscarResource {
         try {
             log.info("POST /oscar/directors/humiliate-by-genre/" + genreStr);
             
-            // Парсим жанр
             MovieGenre genre;
             try {
                 genre = MovieGenre.fromValue(genreStr);
@@ -137,7 +135,7 @@ public class OscarResource {
                         .build();
             }
             
-            HumiliateResponse response = movieServiceClient.humiliateByGenre(genre);
+            HumiliateResponse response = oscarService.humiliateDirectorsByGenre(genre);
             log.info("Successfully humiliated directors by genre " + genreStr);
             return Response.ok(response).build();
         } catch (IllegalArgumentException e) {
