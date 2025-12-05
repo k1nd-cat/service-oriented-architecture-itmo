@@ -37,9 +37,6 @@ spring:
       fail-on-unknown-properties: false
     default-property-inclusion: non_null
 
-  application:
-    name: movie-service-1
-
   cloud:
     consul:
       host: localhost
