@@ -45,7 +45,7 @@ spring:
       port: 8500
       discovery:
         register: true
-        health-check-path: /actuator/health
+        health-check-path: /service1/actuator/health
         health-check-interval: 15s
 
 logging:
