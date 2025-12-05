@@ -1,0 +1,10 @@
+server:
+  port: 9004
+
+spring:
+  application:
+    name: movie-service-2
+  cloud:
+    consul:
+      discovery:
+        service-id: movie2

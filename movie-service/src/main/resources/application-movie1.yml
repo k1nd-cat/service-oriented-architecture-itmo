@@ -1,0 +1,10 @@
+server:
+  port: 9003
+
+spring:
+  application:
+    name: movie-service-1
+  cloud:
+    consul:
+      discovery:
+        service-id: movie1

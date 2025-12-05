@@ -1,13 +1,15 @@
 server:
-  port: 9000
   servlet:
     context-path: /service1
 
 spring:
+  profiles:
+    active: movie1
+
   datasource:
-    url: jdbc:postgresql://localhost:5432/movie_db
-    username: michael-bill
-    password:
+    url: jdbc:postgresql://localhost:5432/blss
+    username: postgres
+    password: ROOT
     driver-class-name: org.postgresql.Driver
     hikari:
       maximum-pool-size: 10
