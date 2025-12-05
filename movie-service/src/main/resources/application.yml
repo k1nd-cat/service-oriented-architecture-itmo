@@ -37,6 +37,18 @@ spring:
       fail-on-unknown-properties: false
     default-property-inclusion: non_null
 
+  application:
+    name: movie-service-1
+
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        register: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+
 logging:
   level:
     root: INFO

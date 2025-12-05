@@ -106,10 +106,19 @@ echo -e "\n${YELLOW}[5/5] Starting services...${NC}"
 
 echo -e "${BLUE}Starting movie-service (Spring Boot)...${NC}"
 cd "${SCRIPT_DIR}/movie-service"
-nohup java -jar "${MOVIE_SERVICE_JAR}" > /tmp/movie-service.log 2>&1 &
-MOVIE_PID=$!
-echo -e "${GREEN}Movie-service started (PID: ${MOVIE_PID})${NC}"
-sleep 3
+
+# Запуск первого инстанса на порту 9003
+nohup java -jar "${MOVIE_SERVICE_JAR}" --server.port=9003 > /tmp/movie-service-9003.log 2>&1 &
+MOVIE_PID1=$!
+echo -e "${GREEN}Movie-service #1 started on port 9003 (PID: ${MOVIE_PID1})${NC}"
+
+# Запуск второго инстанса на порту 9004
+nohup java -jar "${MOVIE_SERVICE_JAR}" --server.port=9004 > /tmp/movie-service-9004.log 2>&1 &
+MOVIE_PID2=$!
+echo -e "${GREEN}Movie-service #2 started on port 9004 (PID: ${MOVIE_PID2})${NC}"
+
+echo -e "${GREEN}All movie-service instances started${NC}"
+sleep 5
 
 echo -e "${BLUE}Deploying oscar-service EAR to Payara...${NC}"
 "${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}"
