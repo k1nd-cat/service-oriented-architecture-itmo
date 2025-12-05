@@ -3,8 +3,8 @@ server:
 
 spring:
   application:
-    name: movie-service-2
+    name: movie-service
   cloud:
     consul:
       discovery:
-        service-id: movie2
+        service-id: movie
