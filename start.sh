@@ -54,11 +54,19 @@ log_section "Starting deployment script"
 # PHASE 1: CLEANUP
 # ============================================
 
-log_step "[CLEANUP] Full Payara cleanup..."
+log_step "[CLEANUP] Full cleanup of all services..."
 
-# Kill movie-service processes
-log_info "Killing movie-service processes..."
+# Kill ALL Java processes related to our services
+log_info "Stopping all service processes..."
 pkill -f "movie-service-1.0.0.jar" || true
+pkill -f "payara" || true
+pkill -9 -f "GlassFish" || true
+sleep 2
+
+# Stop all Payara instances (if running)
+log_info "Stopping Payara instances..."
+"${ASADMIN}" stop-local-instance instance1 >/dev/null 2>&1 || true
+"${ASADMIN}" stop-local-instance instance2 >/dev/null 2>&1 || true
 sleep 2
 
 # Stop DAS (Domain Administration Server)
@@ -66,13 +74,21 @@ log_info "Stopping DAS..."
 "${ASADMIN}" stop-domain domain1 >/dev/null 2>&1 || true
 sleep 3
 
+# Kill any remaining processes on ports
+log_info "Freeing ports..."
+for port in 4848 9001 9002 9003 9004 8181; do
+    lsof -ti:$port 2>/dev/null | xargs kill -9 2>/dev/null || true
+done
+sleep 2
+
 # Remove old domain completely
 log_info "Removing old domain..."
 rm -rf "${PAYARA_HOME}/glassfish/domains/domain1"
+rm -rf "${PAYARA_HOME}/glassfish/nodes/localhost-domain1"
 
 # Recreate fresh domain
 log_info "Creating fresh domain..."
-"${ASADMIN}" create-domain --adminport 4848 domain1
+"${ASADMIN}" create-domain --adminport 4848 --nopassword domain1
 if [ $? -ne 0 ]; then
     exit_with_error "Failed to create domain1"
 fi
@@ -80,16 +96,13 @@ fi
 log_success "Cleanup completed"
 
 # ============================================
-# PHASE 2: GIT PULL
+# PHASE 2: GIT PULL (OPTIONAL)
 # ============================================
 
-log_step "[1/5] Pulling latest changes from git..."
+log_step "[1/5] Skipping git pull (manual deployment)..."
 cd "${SCRIPT_DIR}"
-git pull
-if [ $? -ne 0 ]; then
-    exit_with_error "Git pull failed"
-fi
-log_success "Git pull completed"
+# git pull можно раскомментировать при необходимости
+log_success "Git check completed"
 
 # ============================================
 # PHASE 3: PAYARA INITIALIZATION
@@ -258,7 +271,7 @@ sleep 2
 
 for instance in instance1 instance2; do
     log_info "  Starting $instance..."
-    "${ASADMIN}" start-local-instance --verbose "$instance" 2>&1 | tee /tmp/instance-$instance.log
+    "${ASADMIN}" start-local-instance "$instance" > /tmp/instance-$instance.log 2>&1
     if [ $? -ne 0 ]; then
         log_error "Failed to start $instance"
         log_info "Last 20 lines of instance log:"
@@ -267,7 +280,7 @@ for instance in instance1 instance2; do
         exit_with_error "Failed to start $instance"
     fi
     log_success "$instance started"
-    sleep 3
+    sleep 5
 done
 
 # Даем время на запуск и синхронизацию

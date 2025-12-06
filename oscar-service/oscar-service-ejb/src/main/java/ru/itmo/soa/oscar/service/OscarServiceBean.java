@@ -35,7 +35,7 @@ public class OscarServiceBean implements OscarService {
     
     @Override
     public List<DirectorInfo> getDirectorsWithoutOscars() throws Exception {
-        String url = movieServiceBaseUrl + "/oscar/directors/get-loosers";
+        String url = movieServiceBaseUrl + "/internal/oscar/directors/get-loosers";
         log.info("Calling movie-service: POST " + url);
         
         HttpURLConnection connection = null;
@@ -89,7 +89,7 @@ public class OscarServiceBean implements OscarService {
     
     @Override
     public HumiliateResponse humiliateDirectorsByGenre(MovieGenre genre) throws Exception {
-        String url = movieServiceBaseUrl + "/oscar/directors/humiliate-by-genre/" + genre.name();
+        String url = movieServiceBaseUrl + "/internal/oscar/directors/humiliate-by-genre/" + genre.name();
         log.info("Calling movie-service: POST " + url);
         
         HttpURLConnection connection = null;
