@@ -176,10 +176,10 @@ sleep 5
 
 echo -e "\n${YELLOW}[5/5] Deploying Oscar Service...${NC}"
 
-# Redeploy (заменяет существующее приложение или создаёт новое)
+# Deploy to domain (DAS) - once only
 echo -e "${BLUE}Deploying oscar-service to domain...${NC}"
 "${ASADMIN}" redeploy --name oscar-service "${OSCAR_SERVICE_EAR}" 2>/dev/null || \
-"${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}"
+"${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}" >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment to domain failed!${NC}"
@@ -187,7 +187,20 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ oscar-service deployed to domain${NC}"
 
-# Create application references on instances
+# START instances before creating refs
+echo -e "${BLUE}Starting instances...${NC}"
+for instance in instance1 instance2; do
+    "${ASADMIN}" start-local-instance "$instance" >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to start $instance!${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}  ✅ $instance started${NC}"
+done
+
+sleep 5
+
+# Create application references on running instances
 echo -e "${BLUE}Creating application references on instances...${NC}"
 for instance in instance1 instance2; do
     "${ASADMIN}" create-application-ref oscar-service --target "$instance" --force=true >/dev/null 2>&1
