@@ -192,15 +192,23 @@ sleep 5
 
 # --- Деплой Oscar Service ---
 
-for instance in instance1 instance2; do
-    echo -e "${BLUE}Deploying to $instance...${NC}"
-    "${ASADMIN}" deploy --name oscar-service --target "$instance" "${OSCAR_SERVICE_EAR}"
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}Deployment to $instance failed!${NC}"
-        exit 1
-    fi
-    echo -e "${GREEN}Deployed to $instance${NC}"
-done
+# Деплой на первый instance (основной)
+echo -e "${BLUE}Deploying oscar-service to instance1...${NC}"
+"${ASADMIN}" deploy --name oscar-service --target instance1 --force=true "${OSCAR_SERVICE_EAR}"
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Deployment to instance1 failed!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}Deployed to instance1${NC}"
+
+# Ссылка на второй instance (быстро)
+echo -e "${BLUE}Creating reference on instance2...${NC}"
+"${ASADMIN}" create-application-ref oscar-service --target instance2
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to create ref on instance2!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}oscar-service available on instance2${NC}"
 
 # --- Конец деплоя Oscar Service ---
 
