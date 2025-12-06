@@ -17,6 +17,40 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Starting deployment script${NC}"
 echo -e "${GREEN}========================================${NC}"
 
+echo -e "${YELLOW}Cleaning up existing Payara instances...${NC}"
+
+# Убить movie-service процессы
+echo -e "${BLUE}Stopping movie-service processes...${NC}"
+pkill -f "movie-service-1.0.0.jar" || true
+sleep 2
+
+# Остановить все instances
+INSTANCES=$("${ASADMIN}" list-instances 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
+if [ ! -z "$INSTANCES" ]; then
+    echo -e "${BLUE}Stopping instances: $INSTANCES${NC}"
+    for instance in $INSTANCES; do
+        "${ASADMIN}" stop-local-instance "$instance" >/dev/null 2>&1 || true
+    done
+    sleep 3
+fi
+
+# Удалить все instances
+INSTANCES=$("${ASADMIN}" list-instances 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
+if [ ! -z "$INSTANCES" ]; then
+    echo -e "${BLUE}Deleting instances: $INSTANCES${NC}"
+    for instance in $INSTANCES; do
+        "${ASADMIN}" delete-instance "$instance" >/dev/null 2>&1 || true
+    done
+fi
+
+# Undeploy приложения с DAS (если есть)
+"${ASADMIN}" undeploy oscar-service >/dev/null 2>&1 || true
+
+# Остановить DAS
+echo -e "${BLUE}Stopping Payara DAS...${NC}"
+"${ASADMIN}" stop-domain domain1 >/dev/null 2>&1 || true
+sleep 3
+
 echo -e "\n${YELLOW}[1/5] Pulling latest changes from git...${NC}"
 git pull
 if [ $? -ne 0 ]; then
@@ -28,18 +62,54 @@ echo -e "${GREEN}Git pull completed successfully${NC}"
 echo -e "\n${YELLOW}[2/5] Checking Payara status...${NC}"
 PAYARA_RUNNING=$("${ASADMIN}" list-domains | grep "domain1 running" | wc -l)
 
+echo -e "\n${YELLOW}[2/5] Checking Payara DAS and instances...${NC}"
+
+# --- Начало инициализации Payara ---
+
+# Проверка DAS (domain1)
+PAYARA_RUNNING=$("${ASADMIN}" list-domains | grep "domain1 running" | wc -l)
 if [ "$PAYARA_RUNNING" -eq 0 ]; then
-    echo -e "${YELLOW}Payara is not running. Starting Payara...${NC}"
+    echo -e "${YELLOW}Starting Payara DAS...${NC}"
     "${ASADMIN}" start-domain domain1
     if [ $? -ne 0 ]; then
-        echo -e "${RED}Failed to start Payara!${NC}"
+        echo -e "${RED}Failed to start Payara DAS!${NC}"
         exit 1
     fi
-    echo -e "${GREEN}Payara started successfully${NC}"
-    sleep 5
+    echo -e "${GREEN}Payara DAS started${NC}"
+    sleep 10  # больше времени для полной инициализации
 else
-    echo -e "${GREEN}Payara is already running${NC}"
+    echo -e "${GREEN}Payara DAS already running${NC}"
 fi
+
+# Проверка/создание instance1 (порт 9001)
+INSTANCE1_EXISTS=$("${ASADMIN}" list-instances | grep "instance1" | wc -l)
+if [ "$INSTANCE1_EXISTS" -eq 0 ]; then
+    echo -e "${YELLOW}Creating instance1 (HTTP:9001)...${NC}"
+    "${ASADMIN}" create-instance \
+        --node localhost-domain1 \
+        --systemproperties HTTP_LISTENER_PORT=9001 \
+        instance1
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to create instance1!${NC}"
+        exit 1
+    fi
+fi
+
+# Проверка/создание instance2 (порт 9002)
+INSTANCE2_EXISTS=$("${ASADMIN}" list-instances | grep "instance2" | wc -l)
+if [ "$INSTANCE2_EXISTS" -eq 0 ]; then
+    echo -e "${YELLOW}Creating instance2 (HTTP:9002)...${NC}"
+    "${ASADMIN}" create-instance \
+        --node localhost-domain1 \
+        --systemproperties HTTP_LISTENER_PORT=9002 \
+        instance2
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to create instance2!${NC}"
+        exit 1
+    fi
+fi
+
+# --- Конец инициализации Payara ---
 
 echo -e "\n${YELLOW}[3/5] Building the projects...${NC}"
 
@@ -120,13 +190,19 @@ echo -e "${GREEN}Movie-service #2 started on port 9004 (PID: ${MOVIE_PID2})${NC}
 echo -e "${GREEN}All movie-service instances started${NC}"
 sleep 5
 
-echo -e "${BLUE}Deploying oscar-service EAR to Payara...${NC}"
-"${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}"
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Deployment of oscar-service failed!${NC}"
-    exit 1
-fi
-echo -e "${GREEN}Oscar-service EAR deployed successfully${NC}"
+# --- Деплой Oscar Service ---
+
+for instance in instance1 instance2; do
+    echo -e "${BLUE}Deploying to $instance...${NC}"
+    "${ASADMIN}" deploy --name oscar-service --target "$instance" "${OSCAR_SERVICE_EAR}"
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Deployment to $instance failed!${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}Deployed to $instance${NC}"
+done
+
+# --- Конец деплоя Oscar Service ---
 
 echo -e "\n${GREEN}========================================${NC}"
 echo -e "${GREEN}Deployment completed successfully!${NC}"
