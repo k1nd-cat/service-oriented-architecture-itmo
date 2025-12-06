@@ -17,39 +17,60 @@ echo -e "${GREEN}========================================${NC}"
 echo -e "${GREEN}Starting deployment script${NC}"
 echo -e "${GREEN}========================================${NC}"
 
-echo -e "${YELLOW}Cleaning up existing Payara instances...${NC}"
+echo -e "${YELLOW}Full Payara cleanup...${NC}"
 
-# Убить movie-service процессы
-echo -e "${BLUE}Stopping movie-service processes...${NC}"
+# 1. Убить movie-service
 pkill -f "movie-service-1.0.0.jar" || true
 sleep 2
 
-# Остановить все instances
-INSTANCES=$("${ASADMIN}" list-instances 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
-if [ ! -z "$INSTANCES" ]; then
-    echo -e "${BLUE}Stopping instances: $INSTANCES${NC}"
-    for instance in $INSTANCES; do
-        "${ASADMIN}" stop-local-instance "$instance" >/dev/null 2>&1 || true
-    done
-    sleep 3
+# 2. Подключиться к DAS (если запущен) для очистки
+"${ASADMIN}" ping-domain-control >/dev/null 2>&1 && DAS_RUNNING=true || DAS_RUNNING=false
+
+if [ "$DAS_RUNNING" = true ]; then
+    echo -e "${BLUE}DAS running, cleaning applications...${NC}"
+    
+    # Удалить ВСЕ application refs
+    REFS=$("${ASADMIN}" list-application-refs | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
+    if [ ! -z "$REFS" ]; then
+        echo -e "${BLUE}Deleting refs: $REFS${NC}"
+        for ref in $REFS; do
+            "${ASADMIN}" delete-application-ref "$ref" >/dev/null 2>&1 || true
+        done
+    fi
+    
+    # Удалить ВСЕ приложения
+    APPS=$("${ASADMIN}" list-applications | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
+    if [ ! -z "$APPS" ]; then
+        echo -e "${BLUE}Undeploying apps: $APPS${NC}"
+        for app in $APPS; do
+            "${ASADMIN}" undeploy "$app" >/dev/null 2>&1 || true
+        done
+    fi
+    
+    # Остановить/удалить instances
+    INSTANCES=$("${ASADMIN}" list-instances | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
+    if [ ! -z "$INSTANCES" ]; then
+        echo -e "${BLUE}Stopping instances: $INSTANCES${NC}"
+        for instance in $INSTANCES; do
+            "${ASADMIN}" stop-local-instance "$instance" >/dev/null 2>&1 || true
+        done
+        sleep 2
+        
+        echo -e "${BLUE}Deleting instances: $INSTANCES${NC}"
+        for instance in $INSTANCES; do
+            "${ASADMIN}" delete-instance "$instance" >/dev/null 2>&1 || true
+        done
+    fi
+    
+    # Остановить DAS
+    echo -e "${BLUE}Stopping DAS...${NC}"
+    "${ASADMIN}" stop-domain domain1 >/dev/null 2>&1 || true
+else
+    echo -e "${BLUE}DAS not running, skipping app cleanup${NC}"
 fi
 
-# Удалить все instances
-INSTANCES=$("${ASADMIN}" list-instances 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
-if [ ! -z "$INSTANCES" ]; then
-    echo -e "${BLUE}Deleting instances: $INSTANCES${NC}"
-    for instance in $INSTANCES; do
-        "${ASADMIN}" delete-instance "$instance" >/dev/null 2>&1 || true
-    done
-fi
-
-# Undeploy приложения с DAS (если есть)
-"${ASADMIN}" undeploy oscar-service >/dev/null 2>&1 || true
-
-# Остановить DAS
-echo -e "${BLUE}Stopping Payara DAS...${NC}"
-"${ASADMIN}" stop-domain domain1 >/dev/null 2>&1 || true
 sleep 3
+echo -e "${GREEN}Full cleanup completed${NC}"
 
 echo -e "\n${YELLOW}[1/5] Pulling latest changes from git...${NC}"
 git pull
