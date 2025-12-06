@@ -216,14 +216,44 @@ log_success "oscar-service deployed to DAS"
 sleep 5
 
 # ВАЖНО: Запускаем экземпляры ПОСЛЕ успешного развертывания на DAS
+kill_process_on_port() {
+    local port=$1
+    local pids=$(lsof -ti:$port 2>/dev/null)
+    if [ -n "$pids" ]; then
+        log_info "Port $port is in use (PID: $pids), killing..."
+        kill -9 $pids 2>/dev/null || true
+        sleep 1
+    fi
+}
+
+check_port_available() {
+    local port=$1
+    if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
+        return 1  # Port is in use
+    else
+        return 0  # Port is available
+    fi
+}
+
 log_info "Starting instances..."
+
+log_info "Checking and freeing ports 9001/9002..."
+kill_process_on_port 9001
+kill_process_on_port 9002
+sleep 2
+
 for instance in instance1 instance2; do
     log_info "  Starting $instance..."
-    "${ASADMIN}" start-local-instance "$instance" >/dev/null 2>&1
+    "${ASADMIN}" start-local-instance --verbose "$instance" 2>&1 | tee /tmp/instance-$instance.log
     if [ $? -ne 0 ]; then
+        log_error "Failed to start $instance"
+        log_info "Last 20 lines of instance log:"
+        tail -20 "${PAYARA_HOME}/glassfish/nodes/localhost-domain1/${instance}/logs/server.log" 2>/dev/null || \
+        tail -20 /tmp/instance-$instance.log
         exit_with_error "Failed to start $instance"
     fi
     log_success "$instance started"
+    sleep 3
 done
 
 # Даем время на запуск и синхронизацию
