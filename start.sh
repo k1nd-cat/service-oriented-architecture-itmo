@@ -191,9 +191,11 @@ sleep 5
 
 echo -e "\n${YELLOW}[5/5] Deploying Oscar Service...${NC}"
 
-# Deploy to domain (DAS) - once only
+# Redeploy (заменяет существующее приложение или создаёт новое)
 echo -e "${BLUE}Deploying oscar-service to domain...${NC}"
-"${ASADMIN}" deploy --name oscar-service --force=true "${OSCAR_SERVICE_EAR}"
+"${ASADMIN}" redeploy --name oscar-service "${OSCAR_SERVICE_EAR}" 2>/dev/null || \
+"${ASADMIN}" deploy --name oscar-service "${OSCAR_SERVICE_EAR}"
+
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment to domain failed!${NC}"
     exit 1
