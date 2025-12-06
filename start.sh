@@ -24,9 +24,19 @@ pkill -f "movie-service-1.0.0.jar" || true
 sleep 2
 
 # 2. ВРЕМЕННО запустить DAS для очистки
-echo -e "${BLUE}Starting DAS temporarily for cleanup...${NC}"
-"${ASADMIN}" start-domain domain1 >/dev/null 2>&1 || true
-sleep 5  # ждем инициализации
+"${ASADMIN}" list-domains | grep "domain1 running" >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    # Не запущен – стартуем
+    "${ASADMIN}" start-domain domain1 >/dev/null 2>&1 || {
+        echo -e "${RED}Failed to start domain1 for cleanup${NC}"
+        exit 1
+    }
+    STARTED_FOR_CLEANUP=true
+    sleep 5
+else
+    # Уже запущен – просто используем
+    STARTED_FOR_CLEANUP=false
+fi
 
 # 3. Полная очистка (теперь DAS работает!)
 echo -e "${BLUE}Cleaning applications and instances...${NC}"
@@ -193,23 +203,24 @@ sleep 5
 
 # --- Деплой Oscar Service ---
 
-# Деплой на первый instance (основной)
-echo -e "${BLUE}Deploying oscar-service to instance1...${NC}"
-"${ASADMIN}" deploy --name oscar-service --target instance1 --force=true "${OSCAR_SERVICE_EAR}"
+echo -e "${BLUE}Deploying oscar-service to domain (DAS)...${NC}"
+"${ASADMIN}" deploy --name oscar-service --force=true "${OSCAR_SERVICE_EAR}"
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Deployment to instance1 failed!${NC}"
+    echo -e "${RED}Deployment to domain failed!${NC}"
     exit 1
 fi
-echo -e "${GREEN}Deployed to instance1${NC}"
+echo -e "${GREEN}oscar-service deployed in domain${NC}"
 
-# Ссылка на второй instance (быстро)
-echo -e "${BLUE}Creating reference on instance2...${NC}"
-"${ASADMIN}" create-application-ref oscar-service --target instance2
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to create ref on instance2!${NC}"
-    exit 1
-fi
-echo -e "${GREEN}oscar-service available on instance2${NC}"
+echo -e "${BLUE}Creating application refs on instances...${NC}"
+for instance in instance1 instance2; do
+    echo -e "${BLUE}  -> Linking to $instance...${NC}"
+    "${ASADMIN}" create-application-ref oscar-service --target "$instance" --force=true
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Failed to create ref on $instance!${NC}"
+        exit 1
+    fi
+done
+echo -e "${GREEN}oscar-service is available on instance1 and instance2${NC}"
 
 # --- Конец деплоя Oscar Service ---
 
