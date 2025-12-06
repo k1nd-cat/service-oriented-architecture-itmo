@@ -38,9 +38,11 @@ rm -rf "${PAYARA_HOME}/glassfish/domains/domain1"
 
 # 4. Recreate fresh domain
 echo -e "${BLUE}Creating fresh domain...${NC}"
-"${ASADMIN}" create-domain domain1 >/dev/null 2>&1
+"${ASADMIN}" create-domain --adminport 4848 domain1
 if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to create domain1!${NC}"
+    echo -e "${BLUE}Debug: trying to see what went wrong...${NC}"
+    "${ASADMIN}" create-domain --adminport 4848 domain1
     exit 1
 fi
 
