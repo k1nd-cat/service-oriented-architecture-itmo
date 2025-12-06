@@ -27,42 +27,25 @@ echo -e "\n${YELLOW}[CLEANUP] Full Payara cleanup...${NC}"
 pkill -f "movie-service-1.0.0.jar" || true
 sleep 2
 
-# 2. Start DAS if not running (needed for cleanup)
-"${ASADMIN}" list-domains 2>/dev/null | grep -q "domain1 running"
-if [ $? -ne 0 ]; then
-    echo -e "${BLUE}Starting DAS for cleanup...${NC}"
-    "${ASADMIN}" start-domain domain1 >/dev/null 2>&1 || {
-        echo -e "${RED}Failed to start domain1!${NC}"
-        exit 1
-    }
-    sleep 5
-fi
-
-# 3. Delete all application references (по точному имени oscar-service)
-echo -e "${BLUE}Deleting application references...${NC}"
-"${ASADMIN}" delete-application-ref oscar-service --target server >/dev/null 2>&1 || true
-"${ASADMIN}" delete-application-ref oscar-service --target instance1 >/dev/null 2>&1 || true
-"${ASADMIN}" delete-application-ref oscar-service --target instance2 >/dev/null 2>&1 || true
-
-# 4. Undeploy oscar-service specifically
-echo -e "${BLUE}Undeploying applications...${NC}"
-"${ASADMIN}" undeploy --force oscar-service >/dev/null 2>&1 || true
-"${ASADMIN}" undeploy --force __admingui >/dev/null 2>&1 || true
-
-# 5. Stop and delete instances
-echo -e "${BLUE}Removing instances...${NC}"
-"${ASADMIN}" stop-local-instance instance1 >/dev/null 2>&1 || true
-"${ASADMIN}" stop-local-instance instance2 >/dev/null 2>&1 || true
-sleep 2
-"${ASADMIN}" delete-instance instance1 >/dev/null 2>&1 || true
-"${ASADMIN}" delete-instance instance2 >/dev/null 2>&1 || true
-
-# 6. Stop DAS
+# 2. Stop DAS
 echo -e "${BLUE}Stopping DAS...${NC}"
 "${ASADMIN}" stop-domain domain1 >/dev/null 2>&1 || true
 sleep 3
 
+# 3. DELETE domain completely (radical but guaranteed)
+echo -e "${BLUE}Removing old domain...${NC}"
+rm -rf "${PAYARA_HOME}/glassfish/domains/domain1"
+
+# 4. Recreate fresh domain
+echo -e "${BLUE}Creating fresh domain...${NC}"
+"${ASADMIN}" create-domain domain1 >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+    echo -e "${RED}Failed to create domain1!${NC}"
+    exit 1
+fi
+
 echo -e "${GREEN}✅ Cleanup completed${NC}"
+
 
 # ============================================
 # GIT PULL PHASE
