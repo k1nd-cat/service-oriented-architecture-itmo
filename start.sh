@@ -117,6 +117,13 @@ if [ $? -ne 0 ]; then
 fi
 log_success "instance1 created"
 
+# Жёстко прописываем HTTP-порт 9001 для конфигурации instance1-config
+log_info "Forcing HTTP port 9001 for instance1..."
+"${ASADMIN}" set "configs.config.instance1-config.network-config.network-listeners.network-listener.http-listener-1.port=9001"
+if [ $? -ne 0 ]; then
+    exit_with_error "Failed to set HTTP port for instance1"
+fi
+
 # Create instance2
 log_info "Creating instance2 (HTTP:9002)..."
 "${ASADMIN}" create-instance \
@@ -127,6 +134,13 @@ if [ $? -ne 0 ]; then
     exit_with_error "Failed to create instance2"
 fi
 log_success "instance2 created"
+
+# Жёстко прописываем HTTP-порт 9002 для конфигурации instance2-config
+log_info "Forcing HTTP port 9002 for instance2..."
+"${ASADMIN}" set "configs.config.instance2-config.network-config.network-listeners.network-listener.http-listener-1.port=9002"
+if [ $? -ne 0 ]; then
+    exit_with_error "Failed to set HTTP port for instance2"
+fi
 
 # ============================================
 # PHASE 4: BUILD PROJECTS
@@ -292,11 +306,11 @@ log_section "🎉 Deployment completed successfully!"
 echo -e "\n${GREEN}📊 Movie Service (Spring Boot - 2 instances):${NC}"
 echo -e "  Instance 1:"
 echo -e "    URL: ${YELLOW}http://localhost:9003${NC}"
-echo -e "    Swagger: ${YELLOW}http://localhost:9003/swagger-ui.html${NC}"
+echo -e "    Swagger: ${YELLOW}http://localhost:9003/service1/swagger-ui.html${NC}"
 echo -e "    Logs: ${YELLOW}tail -f /tmp/movie-service-9003.log${NC}"
 echo -e "  Instance 2:"
 echo -e "    URL: ${YELLOW}http://localhost:9004${NC}"
-echo -e "    Swagger: ${YELLOW}http://localhost:9004/swagger-ui.html${NC}"
+echo -e "    Swagger: ${YELLOW}http://localhost:9004/service1/swagger-ui.html${NC}"
 echo -e "    Logs: ${YELLOW}tail -f /tmp/movie-service-9004.log${NC}"
 
 echo -e "\n${GREEN}📊 Oscar Service (Payara EAR + EJB - 2 instances):${NC}"
