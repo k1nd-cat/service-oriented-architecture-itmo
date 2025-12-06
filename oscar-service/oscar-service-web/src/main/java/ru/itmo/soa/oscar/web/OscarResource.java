@@ -7,7 +7,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -27,12 +26,14 @@ import java.util.logging.Logger;
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Oscar Operations", description = "Операции с \"Оскарами\"")
 public class OscarResource {
-    
+
     private static final Logger log = Logger.getLogger(OscarResource.class.getName());
-    
-    @EJB
     private OscarService oscarService;
-    
+
+    public OscarResource() {
+        oscarService = EJBLookupHelper.lookupRemoteOscarService();
+    }
+
     @POST
     @Path("/get-loosers")
     @Operation(
@@ -163,4 +164,3 @@ public class OscarResource {
         }
     }
 }
-
