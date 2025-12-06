@@ -205,7 +205,7 @@ echo -e "\n${YELLOW}[5/5] Deploying Oscar Service...${NC}"
 
 # Deploy to domain (DAS) - once only
 echo -e "${BLUE}Deploying oscar-service to domain...${NC}"
-"${ASADMIN}" deploy --name oscar-service --force=true "${OSCAR_SERVICE_EAR}" >/dev/null 2>&1
+"${ASADMIN}" deploy --name oscar-service --force=true "${OSCAR_SERVICE_EAR}"
 if [ $? -ne 0 ]; then
     echo -e "${RED}Deployment to domain failed!${NC}"
     exit 1
