@@ -38,36 +38,24 @@ if [ $? -ne 0 ]; then
     sleep 5
 fi
 
-# 3. Delete all application references
+# 3. Delete all application references (по точному имени oscar-service)
 echo -e "${BLUE}Deleting application references...${NC}"
-REFS=$("${ASADMIN}" list-application-refs 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
-if [ ! -z "$REFS" ]; then
-    for ref in $REFS; do
-        "${ASADMIN}" delete-application-ref "$ref" >/dev/null 2>&1 || true
-    done
-fi
+"${ASADMIN}" delete-application-ref oscar-service --target server >/dev/null 2>&1 || true
+"${ASADMIN}" delete-application-ref oscar-service --target instance1 >/dev/null 2>&1 || true
+"${ASADMIN}" delete-application-ref oscar-service --target instance2 >/dev/null 2>&1 || true
 
-# 4. Undeploy all applications
-echo -e "${BLUE}Undeploying all applications...${NC}"
-APPS=$("${ASADMIN}" list-applications 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
-if [ ! -z "$APPS" ]; then
-    for app in $APPS; do
-        "${ASADMIN}" undeploy --force "$app" >/dev/null 2>&1 || true
-    done
-fi
+# 4. Undeploy oscar-service specifically
+echo -e "${BLUE}Undeploying applications...${NC}"
+"${ASADMIN}" undeploy --force oscar-service >/dev/null 2>&1 || true
+"${ASADMIN}" undeploy --force __admingui >/dev/null 2>&1 || true
 
 # 5. Stop and delete instances
 echo -e "${BLUE}Removing instances...${NC}"
-INSTANCES=$("${ASADMIN}" list-instances 2>/dev/null | grep -v "COMMAND" | grep -v "N/A" | xargs || true)
-if [ ! -z "$INSTANCES" ]; then
-    for instance in $INSTANCES; do
-        "${ASADMIN}" stop-local-instance "$instance" >/dev/null 2>&1 || true
-    done
-    sleep 2
-    for instance in $INSTANCES; do
-        "${ASADMIN}" delete-instance "$instance" >/dev/null 2>&1 || true
-    done
-fi
+"${ASADMIN}" stop-local-instance instance1 >/dev/null 2>&1 || true
+"${ASADMIN}" stop-local-instance instance2 >/dev/null 2>&1 || true
+sleep 2
+"${ASADMIN}" delete-instance instance1 >/dev/null 2>&1 || true
+"${ASADMIN}" delete-instance instance2 >/dev/null 2>&1 || true
 
 # 6. Stop DAS
 echo -e "${BLUE}Stopping DAS...${NC}"
