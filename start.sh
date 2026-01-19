@@ -13,6 +13,19 @@ ASADMIN="${PAYARA_HOME}/bin/asadmin"
 MOVIE_SERVICE_JAR="${SCRIPT_DIR}/movie-service/target/movie-service-1.0.0.jar"
 OSCAR_SERVICE_EAR="${SCRIPT_DIR}/oscar-service/oscar-service-ear/target/oscar-service-1.0.0.ear"
 
+# Флаг для пропуска пересборки фронта
+SKIP_FRONTEND_BUILD=false
+for arg in "$@"; do
+    case $arg in
+        --skip-frontend|--no-rebuild-frontend)
+            SKIP_FRONTEND_BUILD=true
+            shift
+            ;;
+        *)
+            ;;
+    esac
+done
+
 # ============================================
 # ФУНКЦИИ ЛОГИРОВАНИЯ И ОБРАБОТКИ ОШИБОК
 # ============================================
@@ -179,22 +192,26 @@ if [ $? -ne 0 ]; then
 fi
 log_success "Oscar-service built"
 
-# Build frontend
-log_info "Building frontend (Flutter Web)..."
-cd "${SCRIPT_DIR}/webapp"
-flutter pub get >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-    exit_with_error "Flutter pub get failed"
+# Build frontend (если не указан флаг --skip-frontend)
+if [ "$SKIP_FRONTEND_BUILD" = false ]; then
+    log_info "Building frontend (Flutter Web)..."
+    cd "${SCRIPT_DIR}/webapp"
+    flutter pub get >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        exit_with_error "Flutter pub get failed"
+    fi
+    dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        exit_with_error "Build runner failed"
+    fi
+    flutter build web >/dev/null 2>&1
+    if [ $? -ne 0 ]; then
+        exit_with_error "Flutter web build failed"
+    fi
+    log_success "Frontend built"
+else
+    log_info "Skipping frontend build (--skip-frontend flag specified)"
 fi
-dart run build_runner build --delete-conflicting-outputs >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-    exit_with_error "Build runner failed"
-fi
-flutter build web >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-    exit_with_error "Flutter web build failed"
-fi
-log_success "Frontend built"
 
 cd "${SCRIPT_DIR}"
 log_success "All builds completed"
