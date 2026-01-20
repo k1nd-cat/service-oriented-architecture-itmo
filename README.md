@@ -388,6 +388,8 @@ sudo systemctl stop haproxy
 
 **Namespace:** `http://soa.itmo.ru/oscar`
 
+**Примеры SOAP запросов:** см. [SOAP_EXAMPLES.md](./temp/SOAP_EXAMPLES.md)
+
 ### Mule ESB REST Proxy
 
 **Базовый URL:** `http://localhost:8081/service2/oscar` (REST интерфейс для SOAP)

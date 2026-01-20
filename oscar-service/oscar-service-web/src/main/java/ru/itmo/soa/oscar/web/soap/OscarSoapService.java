@@ -30,13 +30,11 @@ public class OscarSoapService {
     private OscarService oscarService;
     
     public OscarSoapService() {
-        // EJB will be looked up lazily
     }
     
     private OscarService getOscarService() {
         if (oscarService == null) {
             try {
-                // Use local JNDI lookup instead of remote IIOP
                 javax.naming.Context ctx = new javax.naming.InitialContext();
                 oscarService = (OscarService) ctx.lookup("java:global/oscar-service/ru.itmo.soa-oscar-service-ejb-1.0.0/OscarServiceBean!ru.itmo.soa.oscar.service.OscarService");
             } catch (Exception e) {
