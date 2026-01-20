@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	
+	<!-- HTTP Listener Configuration for REST API -->
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5f9c0821-2f6a-44bf-a2f4-9cc3e400b7b7">
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	
+	<!-- HTTP Request Configuration for SOAP Service (via HAProxy) -->
+	<http:request-config name="SOAP_Service_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="soap-http-config">
+		<http:request-connection host="localhost" port="8080" />
+	</http:request-config>
+	
+	<!-- HTTP Request Configuration for Movie Service (via HAProxy) -->
+	<http:request-config name="Movie_Service_HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="movie-http-config">
+		<http:request-connection host="localhost" port="8080" />
+	</http:request-config>
+
+	<!-- REST Proxy Flow: Get Directors Without Oscars -->
+	<flow name="getDirectorsWithoutOscarsFlow" doc:id="get-directors-flow">
+		<http:listener doc:name="Listener" doc:id="listener-get-directors" 
+			config-ref="HTTP_Listener_config" 
+			path="/service2/oscar/directors/get-loosers" 
+			allowedMethods="POST"/>
+		
+		<set-payload value="#[%dw 2.0&#10;output application/xml&#10;ns soapenv http://www.w3.org/2003/05/soap-envelope&#10;ns oscar http://soa.itmo.ru/oscar&#10;---&#10;soapenv#Envelope: {&#10;&#9;soapenv#Body: {&#10;&#9;&#9;oscar#getDirectorsWithoutOscars: {}&#10;&#9;}&#10;}]" doc:name="Transform to SOAP Request" doc:id="transform-to-soap-get-directors" mimeType="application/xml"/>
+		
+		<http:request method="POST" 
+			doc:name="Call SOAP Service" 
+			doc:id="call-soap-get-directors"
+			config-ref="SOAP_Service_HTTP_Request_configuration"
+			path="/service2/OscarSoapService">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/soap+xml; charset=utf-8",
+	"SOAPAction" : "\"http://soa.itmo.ru/oscar/getDirectorsWithoutOscars\""
+}]]]></http:headers>
+		</http:request>
+		
+		<set-payload value="#[%dw 2.0&#10;output application/json&#10;var xmlStr = write(payload, &quot;application/xml&quot;)&#10;var envelope = read(xmlStr, &quot;application/xml&quot;)&#10;var body = envelope.Envelope.Body default {}&#10;var directorsResponse = body.getDirectorsWithoutOscarsResponse default {}&#10;var directorsObj = directorsResponse.directors default {}&#10;var directorsArray = if (directorsObj is Array) directorsObj else (if (directorsObj != null) (if (typeOf(directorsObj) == &quot;Object&quot;) (directorsObj pluck $) else [directorsObj]) else [])&#10;---&#10;directorsArray map (director) -> {&#10;&#9;name: director.name default &quot;&quot;,&#10;&#9;passportID: director.passportID default &quot;&quot;,&#10;&#9;filmsCount: (director.filmsCount as Number) default 0&#10;}]" doc:name="Transform SOAP Response to JSON" doc:id="transform-soap-to-json-get-directors" mimeType="application/json"/>
+	</flow>
+
+	<!-- REST Proxy Flow: Humiliate Directors By Genre -->
+	<flow name="humiliateDirectorsByGenreFlow" doc:id="humiliate-flow">
+		<http:listener doc:name="Listener" doc:id="listener-humiliate" 
+			config-ref="HTTP_Listener_config" 
+			path="/service2/oscar/directors/humiliate-by-genre/{genre}" 
+			allowedMethods="POST"/>
+		
+		<set-payload value="#[%dw 2.0&#10;output application/xml&#10;ns soapenv http://www.w3.org/2003/05/soap-envelope&#10;ns oscar http://soa.itmo.ru/oscar&#10;var genre = attributes.uriParams.genre&#10;---&#10;soapenv#Envelope: {&#10;&#9;soapenv#Body: {&#10;&#9;&#9;oscar#humiliateDirectorsByGenre: {&#10;&#9;&#9;&#9;oscar#genre: genre&#10;&#9;&#9;}&#10;&#9;}&#10;}]" doc:name="Transform to SOAP Request" doc:id="transform-to-soap-humiliate" mimeType="application/xml"/>
+		
+		<http:request method="POST" 
+			doc:name="Call SOAP Service" 
+			doc:id="call-soap-humiliate"
+			config-ref="SOAP_Service_HTTP_Request_configuration"
+			path="/service2/OscarSoapService">
+			<http:headers><![CDATA[#[output application/java
+---
+{
+	"Content-Type" : "application/soap+xml; charset=utf-8",
+	"SOAPAction" : "\"http://soa.itmo.ru/oscar/humiliateDirectorsByGenre\""
+}]]]></http:headers>
+		</http:request>
+		
+		<set-payload value="#[%dw 2.0&#10;output application/json&#10;var xmlStr = write(payload, &quot;application/xml&quot;)&#10;var envelope = read(xmlStr, &quot;application/xml&quot;)&#10;var body = envelope.Envelope.Body default {}&#10;var humiliateResponse = body.humiliateDirectorsByGenreResponse default {}&#10;var result = humiliateResponse.humiliateResponse default {}&#10;---&#10;{&#10;&#9;affectedDirectors: result.affectedDirectors default 0,&#10;&#9;affectedMovies: result.affectedMovies default 0,&#10;&#9;removedOscars: result.removedOscars default 0&#10;}]" doc:name="Transform SOAP Response to JSON" doc:id="transform-soap-to-json-humiliate" mimeType="application/json"/>
+	</flow>
+</mule>

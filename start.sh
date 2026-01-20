@@ -12,6 +12,8 @@ ASADMIN="${PAYARA_HOME}/bin/asadmin"
 
 MOVIE_SERVICE_JAR="${SCRIPT_DIR}/movie-service/target/movie-service-1.0.0.jar"
 OSCAR_SERVICE_EAR="${SCRIPT_DIR}/oscar-service/oscar-service-ear/target/oscar-service-1.0.0.ear"
+MULE_HOME="${SCRIPT_DIR}/muleesb/mule-standalone-4.6.0"
+MULE_APP="${SCRIPT_DIR}/muleesb/lab4/target/lab4-1.0.0-SNAPSHOT-mule-application.jar"
 
 # Флаг для пропуска пересборки фронта
 SKIP_FRONTEND_BUILD=false
@@ -74,6 +76,16 @@ log_info "Stopping all service processes..."
 pkill -f "movie-service-1.0.0.jar" || true
 pkill -f "payara" || true
 pkill -9 -f "GlassFish" || true
+
+# Stop Mule ESB if running
+if [ -d "${MULE_HOME}" ] && [ -f "${MULE_HOME}/bin/mule" ]; then
+    log_info "Stopping Mule ESB..."
+    cd "${MULE_HOME}/bin"
+    ./mule stop >/dev/null 2>&1 || true
+    sleep 2
+fi
+
+pkill -f "mule" || true
 sleep 2
 
 # Stop all Payara instances (if running)
@@ -89,10 +101,15 @@ sleep 3
 
 # Kill any remaining processes on ports
 log_info "Freeing ports..."
-for port in 4848 9001 9002 9003 9004 8181; do
+for port in 4848 9001 9002 9003 9004 8181 8081 8080; do
     lsof -ti:$port 2>/dev/null | xargs kill -9 2>/dev/null || true
 done
 sleep 2
+
+# Stop HAProxy if running
+log_info "Stopping HAProxy..."
+sudo systemctl stop haproxy >/dev/null 2>&1 || true
+sleep 1
 
 # Remove old domain completely
 log_info "Removing old domain..."
@@ -106,22 +123,52 @@ if [ $? -ne 0 ]; then
     exit_with_error "Failed to create domain1"
 fi
 
+# Change DAS HTTP port from 8080 to 8180 BEFORE starting (edit domain.xml directly)
+log_info "Changing DAS HTTP port from 8080 to 8180 in domain.xml..."
+DOMAIN_XML="${PAYARA_HOME}/glassfish/domains/domain1/config/domain.xml"
+if [ -f "${DOMAIN_XML}" ]; then
+    sed -i 's/port="8080"/port="8180"/g' "${DOMAIN_XML}"
+    log_success "DAS HTTP port set to 8180 in domain.xml"
+else
+    log_warning "domain.xml not found, port will be changed after DAS starts"
+fi
+
 log_success "Cleanup completed"
 
 # ============================================
 # PHASE 2: GIT PULL (OPTIONAL)
 # ============================================
 
-log_step "[1/5] Skipping git pull (manual deployment)..."
+log_step "[1/6] Skipping git pull (manual deployment)..."
 cd "${SCRIPT_DIR}"
 # git pull можно раскомментировать при необходимости
 log_success "Git check completed"
 
 # ============================================
-# PHASE 3: PAYARA INITIALIZATION
+# PHASE 3: START HAPROXY (BEFORE PAYARA)
 # ============================================
 
-log_step "[2/5] Initializing Payara DAS and instances..."
+log_step "[2/6] Starting HAProxy Load Balancer..."
+log_info "Starting HAProxy..."
+sudo systemctl start haproxy
+if [ $? -eq 0 ]; then
+    log_success "HAProxy started"
+    sleep 2
+    if sudo systemctl is-active --quiet haproxy; then
+        log_success "HAProxy is running"
+    else
+        log_error "HAProxy failed to start. Check logs: sudo journalctl -xeu haproxy.service"
+        exit_with_error "HAProxy startup failed"
+    fi
+else
+    exit_with_error "Failed to start HAProxy"
+fi
+
+# ============================================
+# PHASE 4: PAYARA INITIALIZATION
+# ============================================
+
+log_step "[3/6] Initializing Payara DAS and instances..."
 
 # Start DAS
 log_info "Starting Payara DAS..."
@@ -131,6 +178,14 @@ if [ $? -ne 0 ]; then
 fi
 log_success "Payara DAS started"
 sleep 10
+
+# Change DAS HTTP port from 8080 to 8180 to free port 8080 for HAProxy
+log_info "Changing DAS HTTP port from 8080 to 8180..."
+"${ASADMIN}" set configs.config.server-config.network-config.network-listeners.network-listener.http-listener-1.port=8180
+if [ $? -ne 0 ]; then
+    log_warning "Failed to change DAS HTTP port (may already be set)"
+fi
+log_success "DAS HTTP port set to 8180"
 
 # Create instance1
 log_info "Creating instance1 (HTTP:9001)..."
@@ -169,10 +224,10 @@ if [ $? -ne 0 ]; then
 fi
 
 # ============================================
-# PHASE 4: BUILD PROJECTS
+# PHASE 5: BUILD PROJECTS
 # ============================================
 
-log_step "[3/5] Building all projects..."
+log_step "[4/6] Building all projects..."
 
 # Build movie-service
 log_info "Building movie-service (Spring Boot)..."
@@ -191,6 +246,40 @@ if [ $? -ne 0 ]; then
     exit_with_error "Oscar-service build failed"
 fi
 log_success "Oscar-service built"
+
+# Build Mule ESB application (requires Java 17)
+log_info "Building Mule ESB application..."
+cd "${SCRIPT_DIR}/muleesb/lab4"
+MULE_JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+if [ -d "${MULE_JAVA_HOME}" ]; then
+    JAVA_HOME="${MULE_JAVA_HOME}" mvn clean package -DskipTests -q
+else
+    exit_with_error "Java 17 required for Mule ESB build but not found at ${MULE_JAVA_HOME}"
+fi
+if [ $? -ne 0 ]; then
+    exit_with_error "Mule ESB application build failed"
+fi
+log_success "Mule ESB application built"
+
+# Install Mule ESB if not present
+if [ ! -d "${MULE_HOME}" ]; then
+    log_info "Mule ESB not found, attempting to install..."
+    MULE_VERSION="4.6.0"
+    MULE_DIST="mule-standalone-${MULE_VERSION}.tar.gz"
+    MULE_URL="https://repository.mulesoft.org/releases/org/mule/distributions/mule-standalone/${MULE_VERSION}/${MULE_DIST}"
+    
+    cd "${SCRIPT_DIR}/muleesb"
+    if [ ! -f "${MULE_DIST}" ]; then
+        log_info "Downloading Mule ESB ${MULE_VERSION}..."
+        wget -q "${MULE_URL}" || exit_with_error "Failed to download Mule ESB from ${MULE_URL}"
+    fi
+    
+    log_info "Extracting Mule ESB..."
+    tar -xzf "${MULE_DIST}" || exit_with_error "Failed to extract Mule ESB"
+    log_success "Mule ESB installed"
+else
+    log_info "Mule ESB already installed"
+fi
 
 # Build frontend (если не указан флаг --skip-frontend)
 if [ "$SKIP_FRONTEND_BUILD" = false ]; then
@@ -328,6 +417,52 @@ done
 sleep 3
 
 # ============================================
+# PHASE 7: MULE ESB DEPLOYMENT
+# ============================================
+
+if [ -n "${MULE_HOME}" ] && [ -d "${MULE_HOME}" ]; then
+    log_step "[6/6] Deploying Mule ESB application..."
+
+    # Copy Mule application to apps directory
+    log_info "Deploying Mule application..."
+    mkdir -p "${MULE_HOME}/apps"
+    cp "${MULE_APP}" "${MULE_HOME}/apps/" || exit_with_error "Failed to copy Mule application"
+
+    # Set JAVA_HOME for Mule ESB to Java 17 (required by Mule 4.6.0)
+    JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+    if [ ! -d "${JAVA_HOME}" ]; then
+        # Fallback to default Java if Java 17 not found
+        JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
+        log_warning "Java 17 not found, using default Java: ${JAVA_HOME}"
+    else
+        log_info "JAVA_HOME set to Java 17: ${JAVA_HOME}"
+    fi
+    export JAVA_HOME
+
+    # Start Mule ESB
+    log_info "Starting Mule ESB..."
+    cd "${MULE_HOME}/bin"
+    export JAVA_HOME
+    nohup ./mule start > /tmp/mule-esb.log 2>&1 &
+    MULE_PID=$!
+    log_success "Mule ESB started (PID: ${MULE_PID})"
+
+    # Wait for Mule ESB to start
+    log_info "Waiting for Mule ESB to initialize..."
+    sleep 15
+
+    # Check if Mule ESB is running
+    if ! pgrep -f "mule" > /dev/null; then
+        log_error "Mule ESB failed to start. Check logs: tail -f /tmp/mule-esb.log"
+        exit_with_error "Mule ESB startup failed"
+    fi
+
+    log_success "Mule ESB is running"
+else
+    log_info "Skipping Mule ESB deployment (not installed)"
+fi
+
+# ============================================
 # SUMMARY
 # ============================================
 
@@ -351,13 +486,29 @@ echo -e "  Instance 2:"
 echo -e "    URL: ${YELLOW}http://localhost:9002/service2${NC}"
 echo -e "    Swagger: ${YELLOW}http://localhost:9002/service2/swagger-ui${NC}"
 
+echo -e "\n${GREEN}📊 Mule ESB (REST Proxy Layer):${NC}"
+echo -e "  REST Proxy URL: ${YELLOW}http://localhost:8081/service2${NC}"
+echo -e "  Logs: ${YELLOW}tail -f /tmp/mule-esb.log${NC}"
+
+echo -e "\n${GREEN}⚖️  HAProxy Load Balancer:${NC}"
+echo -e "  URL: ${YELLOW}http://localhost:8080${NC}"
+echo -e "  Movie Service (via HAProxy): ${YELLOW}http://localhost:8080/service1${NC}"
+echo -e "  Oscar Service (via HAProxy): ${YELLOW}http://localhost:8080/service2${NC}"
+echo -e "  Status: ${YELLOW}sudo systemctl status haproxy${NC}"
+
 echo -e "\n${BLUE}🛠️  API Endpoints:${NC}"
-echo -e "    POST ${YELLOW}http://localhost:9001/service2/oscar/directors/get-loosers${NC}"
-echo -e "    POST ${YELLOW}http://localhost:9001/service2/oscar/directors/humiliate-by-genre/{genre}${NC}"
+echo -e "  ${GREEN}REST Proxy (via Mule ESB):${NC}"
+echo -e "    POST ${YELLOW}http://localhost:8081/service2/oscar/directors/get-loosers${NC}"
+echo -e "    POST ${YELLOW}http://localhost:8081/service2/oscar/directors/humiliate-by-genre/{genre}${NC}"
+echo -e "  ${GREEN}Direct SOAP Service (via HAProxy):${NC}"
+echo -e "    SOAP: ${YELLOW}http://localhost:8080/service2/OscarSoapService${NC}"
+echo -e "    WSDL: ${YELLOW}http://localhost:8080/service2/OscarSoapService?wsdl${NC}"
 
 echo -e "\n${BLUE}📝 Utility Commands:${NC}"
 echo -e "  View Payara logs: ${YELLOW}tail -f ${PAYARA_HOME}/glassfish/domains/domain1/logs/server.log${NC}"
+echo -e "  View Mule ESB logs: ${YELLOW}tail -f /tmp/mule-esb.log${NC}"
 echo -e "  Stop Payara: ${YELLOW}${ASADMIN} stop-domain domain1${NC}"
+echo -e "  Stop Mule ESB: ${YELLOW}cd ${MULE_HOME}/bin && ./mule stop${NC}"
 echo -e "  List instances: ${YELLOW}${ASADMIN} list-instances --long${NC}"
 echo -e "  Kill movie-service: ${YELLOW}pkill -f movie-service-1.0.0.jar${NC}"
 echo -e "  Check instance status: ${YELLOW}${ASADMIN} list-instances${NC}"

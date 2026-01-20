@@ -7,3 +7,16 @@ reports
 payara/payara6
 payara/payara*.zip
 consul_1.22.1_linux_amd64.zip
+.DS_Store
+
+# Mule ESB
+muleesb/mule-standalone-*/
+muleesb/mule-standalone-*.tar.gz
+muleesb/*/target/
+muleesb/*/.mule/
+
+# Logs
+*.log
+/tmp/movie-service-*.log
+/tmp/mule-esb.log
+/tmp/instance-*.log
